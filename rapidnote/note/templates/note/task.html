@@ -1,0 +1,29 @@
+{% load static %}
+  
+  {% for pathlist in pathlist %}
+  <li name="{{pathlist.filePath}}" class="taskhover">
+    <table>
+      <tr>
+        <td>
+          <a href="#" onclick="return false;" class="task_list" role="menuitem" tabindex="-1" value="{{pathlist.filePath}}"><span class="fa fa-equals" value="{{pathlist.filePath}}"></span>{{pathlist.filePath}}</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="taskButtons hidden-sm hidden-xs" style="padding-left: 3.5em; display:none;">
+          <button class="renameTask" data-toggle="modal" data-target="#renameTaskModal" data-task="{{pathlist.filePath}}">
+            <span class="fa fa-edit"></span>
+          </button> <!-- 이름 수정 버튼 -->
+          <button class="deleteTask" value="{{pathlist.filePath}}">
+            <i class="fas fa-trash-alt" value="{{pathlist.filePath}}"></i>
+          </button> <!-- 삭제 버튼 -->
+        </td>
+      </tr>
+    </table>
+  </li>
+  <li class="divider" name="{{pathlist.filePath}}"></li> <!-- divider end -->
+  {% endfor %}
+  <li>
+    <button id="newTask" class="center-block" data-toggle="modal" data-target="#taskModal">
+      <span class="fa fa-plus" id="miniTaskPlus"></span>
+    </button>
+  </li>

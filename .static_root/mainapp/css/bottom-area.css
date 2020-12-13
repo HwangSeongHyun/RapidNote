@@ -1,0 +1,766 @@
+/*스크롤바 영역의 css*/
+::-webkit-scrollbar { 
+	width: 7px;
+	height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+	width: 30px;
+	background: rgba(0,0,0,.1);
+	-webkit-border-radius: 8px;
+	border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	width: 30px;
+	background: rgba(0,0,0,.2);
+	-webkit-border-radius: 8px;
+	border-radius: 50px;
+}
+
+/*1. Task 영역 css*/
+#task {
+	height: 100vh;
+	background-color: #f5f5f5;
+}
+
+#taskDropdown {
+	padding-bottom: 1em;
+	border-bottom: 1px #e9e9e9 solid;
+}
+
+#taskList {
+	background-color: inherit;
+	font-weight: bold;
+	font-size: 3em;
+}
+
+.dropdown:hover .dropdown-menu {
+	/*A Task 에 마우스를 대면 밑으로 테스크 리스트 정렬*/
+	display: block;
+}
+
+.fa-equals {
+	color: #e9e9e9;
+	padding-right: 1em;
+}
+
+#taskList:focus, #newMemo:focus, #newTask:focus, #memoInput:focus, #create_pdf:focus, .close:focus, #smXsNav:focus, #tempSave:focus {
+	outline: none;
+}
+
+#newTask {
+	border: none;
+	background-color: #fff;
+}
+
+.taskList li a {
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+#newTask span {
+	font-size: 1.5em;
+	color: #e9e9e9;
+}
+
+.nav-stacked li a {
+	color: #000000;
+}
+
+.nav-stacked li {
+	border-bottom: 1px #e9e9e9 solid;
+}
+
+#newMemo {
+	background-color: inherit;
+	border: none;
+}
+
+.nav-stacked li a:hover {
+	background-color: #fff;
+}
+
+#newMemo .fa-plus, #newTask .fa-plus {
+	font-size: 2em;
+	color: #e9e9e9;
+}
+
+/*2. 중간 영역 css*/
+#middle {
+	height: 100vh;
+	overflow: auto;
+}
+
+#memoTemp {
+	height: 80vh;
+	overflow: auto;
+}
+
+#memoInput {
+	border-radius: 10px;
+	background-color: #f5f5f5;
+	border-color: #cfcfcf;
+	resize: none;
+	width: 90%;
+	font-size: 1.5em;
+	overflow: auto;
+	padding-right: 15%;
+	margin-top: 1.5em;
+}
+
+#memoSend {
+	border: none;
+	position: absolute;
+	bottom: 14%;
+	left: 80%;
+	height: 2em;
+	width: 6em;
+	background-color: #6994ce;
+	color: #fff;
+	font-weight: bold;
+	border-radius:18px;
+	z-index: 1;
+}
+
+
+.grid {
+	position: relative;
+	margin: 0 auto;
+	padding: 0 1em;
+}
+
+.grid__item {
+	font-size: 1.3em;
+	display: all;
+	margin: 0.2em 0.8em;
+	padding-left: 1em;
+	padding-right: 1em;
+	width: 93%;
+	height: 100%;
+	border-radius: 20px;
+	border: 1px #f5f5f5 solid;
+	background: #fff;
+	color: #76737C;
+	text-align: justify;
+
+}
+
+.groupBlock {
+	margin-top: 1em;
+	padding-bottom: 0.2em;
+	padding-top: 0.2em;
+	background-color: #e9e9e9;
+	border-radius: 18px;
+}
+
+.grid__item::-webkit-scrollbar {
+	display: none;
+}
+
+.groupBlock:hover {
+	cursor: move;
+	cursor: -webkit-grab;
+	cursor: grab;
+}
+
+.groupBlock:active {
+	cursor: -webkit-grabbing;
+	cursor: grabbing;
+}
+
+.grid__item:hover {
+	cursor: move;
+	cursor: -webkit-grab;
+	cursor: grab;
+}
+
+.grid__item:active {
+	cursor: -webkit-grabbing;
+	cursor: grabbing;
+}
+
+/*오른쪽 영역 css*/
+#function {
+	padding-top: 1em;
+	padding-right: 10em;
+}
+
+#final {
+	height: 100vh;
+	background-color: #f5f5f5;
+	overflow: auto;
+}
+
+#editButtons {
+	position: relative;
+}
+
+#memoFinal {
+	height: 89vh;
+	font-size: 2em;
+	overflow: auto;
+}
+
+#editButton {
+	border: none;
+	height: 4em;
+	width: 4em;
+	background-color: #6994ce;
+	color: #fff;
+	font-weight: bold;
+	margin-left: 0.5em;
+	margin-right: 0.5em;
+	margin-bottom: 0.5em;
+	border-radius:3px;
+}
+
+#create_pdf {
+	margin-left: 1vh;
+	border: none;
+	display: inline-block;
+	width: 90px;
+	height: 31px;
+	cursor: pointer;
+	position: absolute;
+	background-color: #e9e9e9;
+	color: #fff;
+	border-radius: 18px;
+	font-weight: bold;
+}
+
+#create_pdf:hover {
+	background-color: #6994ce;
+}
+
+#switch {
+	display: none;
+}
+
+#label {
+	display: inline-block;
+	width: 90px;
+	height: 31px;
+	cursor: pointer;
+	position: relative;
+	background-color: #6994ce;
+}
+
+#label::before {
+	content: '';
+	display: block;
+	width: 40px;
+	height: 23px;
+	left: 4px;
+	bottom: 4px;
+	position: absolute;
+	background-color: #fff;
+	transition: all .4s ease;
+}
+
+
+#switch:checked + #label:before {
+	-webkit-transform: translateX(42px);
+	-ms-transform: translateX(42px);
+	transform: translate(42px);
+}
+
+
+#label.round {
+	border-radius: 18px;
+	padding-left: 18px;
+	padding-top: 10px;
+	font-size: 1.1em;
+	color: #fff;
+}
+
+#label.round::before {
+	border-radius: 18px;
+}
+
+
+/*드랍박스 영역*/
+#title_block::before {
+	content: "\f1dc";
+	font-size: 6em;
+}
+
+#bold_block::before {
+	content: "\f032";
+	font-size: 6em;
+}
+
+#italic_block::before {
+	content: "\f033";
+	font-size: 6em;
+}
+
+#plain_block::before {
+	content: "\f303";
+	font-size: 6em;
+}
+
+#color_block::before {
+	content: "\f043";
+	font-size: 6em;
+}
+
+#trashCan_block::before {
+	content:"\f014";
+	font-size: 6em;
+}
+
+#title_group::before {
+	content: "\f1dc";
+	font-size: 6em;
+}
+
+#bold_group::before {
+	content: "\f032";
+	font-size: 6em;
+}
+
+#italic_group::before {
+	content: "\f033";
+	font-size: 6em;
+}
+
+#plain_group::before {
+	content: "\f303";
+	font-size: 6em;
+}
+
+#color_group::before {
+	content: "\f043";
+	font-size: 6em;
+}
+
+#liOlTag_group::before {
+	content:"\f0cb";
+	font-size: 6em;
+}
+
+#liUlTag_group::before {
+	content:"\f0ca";
+	font-size: 6em;
+}
+
+#trashCan_group::before {
+	content:"\f014";
+	font-size: 6em;
+}
+
+/*텍스트 블록을 드래그 할 시 생기는 드랍박스*/
+.drop-area {
+    position: fixed;
+    top: 100%;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: 14em;
+    /*background: #cc6055;*/
+    background: #4b97ff;
+    text-align: center;
+    -webkit-transition: -webkit-transform 0.5s cubic-bezier(0.6,0,0.4,1);
+    transition: transform 0.5s cubic-bezier(0.6,0,0.4,1);
+    -webkit-transform: translate3d(0,20px,0);
+    transform: translate3d(0,20px,0);
+  }
+
+.drop-area.show {
+	-webkit-transform: translate3d(0,-100%,0);
+	transform: translate3d(0,-100%,0);
+}
+
+.drop-area > div {
+	width: 100%;
+	height: 100%;
+	-webkit-transition: -webkit-transform 0.4s 0.3s;
+	transition: transform 0.4s 0.3s;
+	-webkit-transform: translate3d(0,50%,0);
+	transform: translate3d(0,50%,0);
+}
+
+.drop-area.show > div {
+	-webkit-transform: translate3d(0,0,0);
+	transform: translate3d(0,0,0);
+}
+
+.drop-area__item {
+	position: relative;
+	display: inline-block;
+	margin: 1.25em 1% 1% 1%;
+	max-width: 11em;
+	width: 20%;
+	height: 10em;
+	border-radius: 4px;
+	background: rgba(0,0,0,0.1);
+	-webkit-transition: -webkit-transform 0.3s, background 0.3s;
+	transition: transform 0.3s, background 0.3s;
+	-webkit-backface-visibility: hidden;
+}
+
+.drop-area__item.highlight {
+	background: rgba(0,0,0,0.15);
+	-webkit-transform: scale3d(1.08,1.08,1);
+	transform: scale3d(1.08,1.08,1);
+}
+
+.drop-area__item::before,
+.drop-area__item::after {
+	position: absolute;
+	/*top: 50%;*/
+	left: 0;
+	width: 100%;
+	/*color: rgba(0,0,0,0.15);*/
+	color: #fff;
+	font-size: 1.5em;
+	/*margin-top: -0.35em;*/
+	font-family: FontAwesome;
+	pointer-events: none;
+}
+
+.drop-area__item::before {
+	/*content: '\f064';*/
+}
+
+.drop-feedback.drop-area__item::before {
+	opacity: 0;
+	-webkit-transform: scale3d(0,0,1);
+	transform: scale3d(0,0,1);content: '\f064';
+}
+
+.drop-area__item::after {
+	/*color: rgba(255,253,197,0.6);*/
+	color: #fff;
+	content: '\f00c';
+	font-size: 3em;
+	margin-top: -0.5em;
+	opacity: 0;
+	-webkit-transition: opacity 0.3s, -webkit-transform 0.3s;
+	transition: opacity 0.3s, transform 0.3s;
+	-webkit-transform: scale3d(2,2,1);
+	transform: scale3d(2,2,1);
+}
+
+.drop-feedback.drop-area__item::after {
+	opacity: 1;
+	-webkit-transform: scale3d(1,1,1);
+	transform: scale3d(1,1,1);
+}
+
+.drop-area.show {
+	opacity: 1;
+}
+
+/*그룹 드랍박스*/
+.drop-area-group {
+	position: fixed;
+	top: 100%;
+	left: 0;
+	z-index: 2;
+	width: 100%;
+	height: 14em;
+	/*background: #cc6055;*/
+	background: #FFEF4B;
+	text-align: center;
+	-webkit-transition: -webkit-transform 0.5s cubic-bezier(0.6,0,0.4,1);
+	transition: transform 0.5s cubic-bezier(0.6,0,0.4,1);
+	-webkit-transform: translate3d(0,20px,0);
+	transform: translate3d(0,20px,0);
+}
+
+.drop-area-group.show {
+	-webkit-transform: translate3d(0,-100%,0);
+	transform: translate3d(0,-100%,0);
+}
+
+.drop-area-group > div {
+	width: 100%;
+	height: 100%;
+	-webkit-transition: -webkit-transform 0.4s 0.3s;
+	transition: transform 0.4s 0.3s;
+	-webkit-transform: translate3d(0,50%,0);
+	transform: translate3d(0,50%,0);
+}
+
+.drop-area-group.show > div {
+	-webkit-transform: translate3d(0,0,0);
+	transform: translate3d(0,0,0);
+}
+
+.drop-area-group__item {
+	position: relative;
+	display: inline-block;
+	margin: 1.25em 1% 1% 1%;
+	max-width: 11em;
+	width: 20%;
+	height: 10em;
+	border-radius: 4px;
+	background: rgba(0,0,0,0.1);
+	-webkit-transition: -webkit-transform 0.3s, background 0.3s;
+	transition: transform 0.3s, background 0.3s;
+	-webkit-backface-visibility: hidden;
+}
+
+.drop-area-group__item.highlight {
+	background: rgba(0,0,0,0.15);
+	-webkit-transform: scale3d(1.08,1.08,1);
+	transform: scale3d(1.08,1.08,1);
+}
+
+.drop-area-group__item::before,
+.drop-area-group__item::after {
+	position: absolute;
+	/*top: 50%;*/
+	left: 0;
+	width: 100%;
+	/*color: rgba(0,0,0,0.15);*/
+	color: #fff;
+	font-size: 1.5em;
+	/*margin-top: -0.35em;*/
+	font-family: FontAwesome;
+	pointer-events: none;
+}
+
+.drop-area-group__item::before {
+	/*content: '\f064';*/
+}
+
+.drop-feedback-group.drop-area-group__item::before {
+	opacity: 0;
+	-webkit-transform: scale3d(0,0,1);
+	transform: scale3d(0,0,1);content: '\f064';
+}
+
+.drop-area-group__item::after {
+	/*color: rgba(255,253,197,0.6);*/
+	color: #fff;
+	content: '\f00c';
+	font-size: 3em;
+	margin-top: -0.5em;
+	opacity: 0;
+	-webkit-transition: opacity 0.3s, -webkit-transform 0.3s;
+	transition: opacity 0.3s, transform 0.3s;
+	-webkit-transform: scale3d(2,2,1);
+	transform: scale3d(2,2,1);
+}
+
+.drop-feedback-group.drop-area-group__item::after {
+	opacity: 1;
+	-webkit-transform: scale3d(1,1,1);
+	transform: scale3d(1,1,1);
+}
+
+.drop-area-group.show {
+	opacity: 1;
+}
+
+/* Fixed sidenav, full height */
+.sidenav {
+	height: 100%;
+	width: 0;
+	position: fixed;
+	z-index: 3;
+	top: 0;
+	left: 0;
+	background-color: #e9e9e9;
+	overflow-x: hidden;
+	overflow-y: auto;
+	transition: 0.5s;
+	padding-top: 20px;
+}
+
+/* Style the sidenav links and the dropdown button */
+.sidenav a, .dropdown-btn {
+	padding: 6px 8px 6px 16px;
+	text-decoration: none;
+	font-size: 20px;
+	color: #818181;
+	display: block;
+	border: none;
+	background: none;
+	width: 100%;
+	text-align: left;
+	cursor: pointer;
+	outline: none;
+	transition: 0.3s;
+}
+
+/* On mouse-over */
+.sidenav a:hover, .dropdown-btn:hover {
+	color: #fff;
+}
+
+/* Add an active class to the active dropdown button */
+.active {
+	background-color: #6994ce;
+	color: #fff;
+}
+
+.closebtn {
+	font-size: 2em;
+	margin-left: 200px;
+}
+
+/* Dropdown container (hidden by default). Optional: add a lighter background color and some left padding to change the design of the dropdown content */
+.dropdown-container {
+	display: none;
+	background-color: #D3D3D3;
+	padding-left: 8px;
+}
+
+/* Optional: Style the caret down icon */
+.fa-caret-down {
+	float: right;
+	padding-right: 8px;
+}
+
+#left, #left1, #smXsNav {
+	padding-top: 0.5em;
+	border: none;
+	background-color: white;
+	font-size: 2.5em;
+}
+
+#right, #right1 {
+	padding-top: 0.5em;
+	border: none;
+	background-color: #f5f5f5;
+	font-size: 2.5em;
+}
+
+#tempSave {
+	border: none;
+	position: absolute;
+	bottom: 11%;
+	left: 80%;
+	height: 2em;
+	width: 6em;
+	background-color: #6994ce;
+	color: #fff;
+	font-weight: bold;
+	border-radius:18px;
+	z-index: 1;
+}
+
+
+/*----------------------------------------lg 사이즈----------------------------------------*/
+@media (min-width: 1200px) and screen {
+
+}
+
+/*----------------------------------------md 사이즈----------------------------------------*/
+@media (min-width: 992px) and (max-width: 1200px) {
+
+	#taskList {
+		background-color: #f5f5f5;
+		font-size: 2.5em;
+		padding-top: 0.3em;
+		padding-left: 0.8em;
+	}
+
+	.drop-area-group__item {
+		width: 10%;
+		height: 9.8em;
+	}
+
+}
+
+/*----------------------------------------sm 사이즈----------------------------------------*/
+@media (min-width: 768px) and (max-width: 992px) {
+
+
+	#left:focus, #right:focus {
+		outline: none;
+	}
+
+	.textarea {
+		bottom: 2%;
+		width: 100%;
+		position: absolute;
+	}
+
+	#final {
+		height: 100vh;
+	}
+
+	#memoSend {
+		bottom: 42%;
+	}
+
+	#newTask .fa-plus, #newMemo .fa-plus{
+		color: #818181;
+	}
+
+	#newTask {
+		background-color: inherit;
+		padding-bottom: 0.5em;
+	}
+
+	#newMemo {
+		background-color: inherit;
+		padding-bottom: 0.5em;
+	}
+
+	#newTask .fa-plus:hover, #newMemo .fa-plus:hover{
+		color: #fff;
+	}
+
+	.drop-area-group__item {
+		margin: 1.75em 1% 1% 1%;
+		width: 10%;
+		height: 9em;
+	}
+}
+
+/*----------------------------------------xs 사이즈----------------------------------------*/
+@media (max-width: 768px) {
+
+	#left1:focus, #right1:focus {
+		outline: none;
+	}
+
+	.textarea {
+		bottom: 2%;
+		width: 100%;
+		position: absolute;
+	}
+
+	#memoSend {
+		bottom: 40%;
+	}
+
+	#newTask .fa-plus, #newMemo .fa-plus{
+		color: #818181;
+	}
+
+	#newTask {
+		background-color: inherit;
+		padding-bottom: 0.5em;
+	}
+
+	#newTask .fa-plus:hover, #newMemo .fa-plus:hover{
+		color: #fff;
+	}
+
+	.drop-area-group__item {
+		margin: 2em 1% 1% 1%;
+		width: 10%;
+		height: 6.5em;
+	}
+
+	.drop-area__item {
+		margin: 1.75em 1% 1% 1%;
+		width: 13.5%;
+		height: 7em;
+	}
+
+	#title_block::before, #bold_block::before, #italic_block::before, #plain_block::before, #color_block::before, #trashCan_block::before {
+		font-size: 4em;
+	}
+
+	#title_group::before, #bold_group::before, #italic_group::before, #plain_group::before, #color_group::before, #liOlTag_group::before, #trashCan_group::before, #liUlTag_group::before {
+		font-size: 4em;
+	}
+}

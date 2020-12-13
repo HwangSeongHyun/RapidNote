@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RapidNote</title>
+
+  <!-- 합쳐지고 최소화된 최신 CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"> 
+  <!-- icon 링크 -->
+  <script src="https://kit.fontawesome.com/04a6f97450.js" crossorigin="anonymous"></script>
+  <!-- 템플릿 -->
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/normalize.css"%}' />
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/demo.css"%}' />
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/bottom-area.css"%}' />
+  <!-- pdf 변환을 위한 스크립트 -->
+  <script type = "text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+  <script type = "text/javascript" src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script type = "text/javascript" src = "http://code.jquery.com/jquery-latest.min.js"></script>
+  <style type="text/css">
+
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-fixed-top navbar-default">
+      <div class="container">
+        
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <!-- 브랜드 마크를 눌러서 로그인 화면으로 넘어오게 href 속성을 조정하면 됨 -->
+          <a class="navbar-brand" href="{%url 'note:main'%}">
+            RapidNote
+          </a>
+          <p class="navbar-text">빠르고 편리한 필기</p>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li id="note"><a href="{%url 'note:index'%}">Note</a></li>
+            <li><a href="{%url 'note:download' %}">Download</a></li>
+          </ul>
+          
+          
+        </div><!-- navbar-collapse end -->
+      </div><!-- container end -->
+    </nav>  <!-- navbar end -->
+  </header>
+
+  <div class="signUp-image">   
+    <div class="row signUp-text hidden-xs">
+        <h3>'Rapid' + 'Note'</h3>
+        <p>'빠른', '신속한' 이라는 뜻의 'rapid'와<br>공책을 뜻하는 'note'가 만나<br>
+        키보드를 사용하여 보다 신속한 필기를 자랑하는 노트를 의미합니다. </p>
+    </div>
+  </div>
+
+
+  <div class="container">
+    <div class="row" id="rn-title">
+      <div class="col-xs-12">
+        <div class="text-center">
+          <h1>Sign Up</h1>
+          <p> 저희 RapidNote를 통해서 빠르고 편리한 필기를 경험해보세요</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row center-block" id="rn-signUp">
+      <!-- name 속성은 자바스크립트에 이용되므로 지우지 말아주셈 -->
+      <form id="signUp" accept-charset="UTF-8" role="form" method="POST" action="{%url 'note:signup'%}">
+        {% csrf_token %}
+        <div class="form-group">
+           <label for="user_id">ID</label>
+          <div class="input-group">
+             <input type="text" class="form-control" id="user_id" name="user_id" placeholder="Enter ID" required/>
+            <span class="input-group-btn">
+              <button class="btn btn-default" id="idcheck" type="button">Check</button>
+            </span>
+          </div>
+          </div>
+
+           <div class="form-group">
+           <label for="password">Password</label>
+           <input type="password" class="form-control" id="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="비밀번호는 아래 규칙에 맞게 입력해주세요" required placeholder="Enter Password"/>
+          </div>
+
+          <div id="message">
+           <h4>비밀번호는 이렇게 설정해주세요!</h4>
+           <p id="letter" class="invalid"> <b>소문자</b>가 필요합니다</p>
+           <p id="capital" class="invalid"> 적어도 하나의 <b>대문자</b>가 필요합니다</p>
+           <p id="number" class="invalid"> 적어도 하나의 <b>숫자</b>가 필요합니다</p>
+           <p id="length" class="invalid">적어도 <b>8 글자</b>여야 합니다</p>
+         </div>
+       
+         <br>
+         <div class="form-group">
+           <label for="password">Confirm Password</label>
+           <input type="password" class="form-control" id="passwordcheck" name="passwordcheck" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="위 비밀번호와 똑같이 입력해주세요" required placeholder="Enter Password Again"/>
+           </div>
+           <div class="form-group">
+           <label for="user_name">Name</label>
+           <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Enter Name" required/>
+          </div>
+          <div class="form-group">
+           <label for="user_email">E-mail</label>
+           <input type="text" class="form-control" id="user_mail" name="user_mail" placeholder="Enter Mail" required/>
+        </div>
+        <div class="form-group">
+          <br><br><br>
+          <div class="col-xs-6 text-center">
+            <button type="submit" id="signUp-submit" class="btn btn-primary" id_check_result="fail">Sign Up</button>
+          </div>
+          <div class="col-xs-6 text-center">
+            <button type="reset" class="btn btn-default">Reset</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="container">
+    <div class="row" id="rn-logo">
+      <div class="col-xs-4 text-center">
+        <i class="fab fa-js-square fa-3x" aria-hidden="true"></i>
+      </div>
+      <div class="col-xs-4 text-center">
+        <i class="fab fa-aws fa-3x" aria-hidden="true"></i>
+      </div>
+      <div class="col-xs-4 text-center">
+        <i class="fab fa-python fa-3x" aria-hidden="true"></i>
+      </div>
+    </div>    
+  </div>
+
+
+  <footer>
+    <div class="container">
+      <div class="row" id="rn-footer">
+        <div class="col-sm-4 text-center">
+          <h4>About us</h4>
+          <p>2020-1 Kyonggi Univ. Capstone F Group<br>
+          Hyunbin Kim, Kiho Ryu, Jongho Jeong, Joonyeong Jeong, Seonghyun Hwang</p>
+        </div>
+
+        <div class="col-sm-4 text-center">
+          <h4>Do you like ? Share this !</h4>
+          <p>
+            <a href="https://facebook.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.instagram.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-instagram" aria-hidden="true"></i>
+            </a>
+          </p>    
+        </div>
+
+        <div class="col-sm-4 text-center">      
+          <div class="form-group">
+              <img src='{% static "note/css/pic/logo2.png"%}' alt="logo">
+          </div>
+          <br>
+          <p><small>© RapidNote | 2020-1 Kyonggi Univ. Capstone F Group</small></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script>
+    // 회원가입 테스트 하는데 너무 비밀번호가 까다로워서 복잡하면 밑에 써놓은데 까지 주석 처리 - 여기서 비밀번호 주석 시작
+    var myInput = document.getElementById("password");
+    var letter = document.getElementById("letter");
+    var capital = document.getElementById("capital");
+    var number = document.getElementById("number");
+    var length = document.getElementById("length");
+
+    // When the user clicks on the password field, show the message box
+    myInput.onfocus = function() {
+      document.getElementById("message").style.display = "block";
+    }
+
+    // When the user clicks outside of the password field, hide the message box
+    myInput.onblur = function() {
+      document.getElementById("message").style.display = "none";
+    }
+
+    // When the user starts to type something inside the password field
+    myInput.onkeyup = function() {
+      // Validate lowercase letters
+      var lowerCaseLetters = /[a-z]/g;
+      if(myInput.value.match(lowerCaseLetters)) {  
+        letter.classList.remove("invalid");
+        letter.classList.add("valid");
+      } else {
+        letter.classList.remove("valid");
+        letter.classList.add("invalid");
+      }
+      
+      // Validate capital letters
+      var upperCaseLetters = /[A-Z]/g;
+      if(myInput.value.match(upperCaseLetters)) {  
+        capital.classList.remove("invalid");
+        capital.classList.add("valid");
+      } else {
+        capital.classList.remove("valid");
+        capital.classList.add("invalid");
+      }
+
+      // Validate numbers
+      var numbers = /[0-9]/g;
+      if(myInput.value.match(numbers)) {  
+        number.classList.remove("invalid");
+        number.classList.add("valid");
+      } else {
+        number.classList.remove("valid");
+        number.classList.add("invalid");
+      }
+      
+      // Validate length
+      if(myInput.value.length >= 8) {
+        length.classList.remove("invalid");
+        length.classList.add("valid");
+      } else {
+        length.classList.remove("valid");
+        length.classList.add("invalid");
+      }
+    }
+    // 비밀번호 주석 끝
+
+    //중복체크
+    $(document).ready(function() {
+      $('#idcheck').on("click", function(e) {
+        var user_id = $.trim($('#user_id').val());
+        if(user_id == '') {
+          alert('아이디를 입력해주세요');
+        } else {
+          var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+          $.ajax({
+            url:"{%url 'note:idcheck' %}",
+            type:"POST",
+            data : {
+               'user_id':user_id,
+               'csrfmiddlewaretoken':csrf
+            },
+            success: (function(data){
+              if(data == "unavailable") {
+                alert("사용중인 아이디입니다.");
+                $("#user_id").focus();
+              }
+              else {
+                alert("사용 가능한 아이디입니다.");
+                $("#signUp-submit").attr("id_check_result", "success");
+              }
+            }),         
+          });   
+        }
+      });
+
+      $('#user_id').change(function() { //id input이 수정된 경우
+        $("#signUp-submit").attr("id_check_result", "fail");
+      });
+
+      $('#signUp').submit(function() {
+        var pw = $("#password").val();
+        var pwchk = $("#passwordcheck").val();
+        if($("#signUp-submit").attr("id_check_result") == "fail") {
+          alert("ID 중복체크를 해주시기 바랍니다.");
+          $("#user_id").focus();
+          return false;
+        }
+        if(pw != pwchk) {
+          alert("비밀번호가 일치하지 않습니다.");
+          $("#password").focus();
+          return false;
+        }
+        alert("회원가입이 완료되었습니다.");
+      });
+    });
+
+    //세션 값이 없을 때 로그인 창 숨키기
+      var session = "{{request.session.user_id}}";
+
+      var note = document.getElementById('note');
+      $(document).ready(function(){
+        if(session == '') {
+          note.classList.add('hide');
+        } else {
+          note.classList.remove('hide');
+        }
+      });  
+  </script>
+  
+</body>
+</html>

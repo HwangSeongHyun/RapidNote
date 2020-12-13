@@ -1,0 +1,7 @@
+{% load static %}
+  
+  {% for filelist in filelist %}
+  <li id="hashChild">
+    <a href="{% url 'note:changememo' task=filelist.filePath  memo=filelist.fileName %}">{{filelist.filePath}}/{{filelist.fileName}}</a>
+  </li>
+  {% endfor %}

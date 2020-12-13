@@ -1,0 +1,529 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta property="og:image" content=''> -->
+    <title>RapidNote</title>
+
+    <!-- 합쳐지고 최소화된 최신 CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"> 
+    <!-- icon 링크 -->
+    <script src="https://kit.fontawesome.com/04a6f97450.js" crossorigin="anonymous"></script>
+    <!-- css -->
+    <link rel="stylesheet" type="text/css" href='{% static "note/css/normalize.css"%}' />
+    <link rel="stylesheet" type="text/css" href='{% static "note/css/demo.css"%}'  />
+    <link rel="stylesheet" type="text/css" href='{% static "note/css/bottom-area.css"%}'  />
+
+    <!-- pdf 변환을 위한 스크립트 -->
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+
+    <!-- 프린트를 위한 스크립트-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js"></script>
+
+    <!-- 카카오톡 -->
+    <script src="//developers.kakao.com/sdk/js/kakao.min.js"></script>
+
+    <style>
+      html, body, .container-fluid {
+        height: 100%;
+        background-color: #f8f8f8;
+      }
+      #viewer_left {
+        height: 100%;
+      }
+      #viewer_middle {
+        padding-top: 30px;
+        height: 100%;
+      }
+      #viewer_right {
+        height: 100%;
+      }
+      #viewer {
+        font-size: 2em;
+      }
+
+      #share span {
+        position: relative;
+        color: #fff;
+        top: -5px;
+      }
+
+      #note1 {  
+          border: none;
+          background-color: #e2e2e2;
+          color: #fff;
+          border-radius: 18px;
+          font-weight: bold;
+          height: 20px;
+          width: 3em;
+      }
+
+      #note1 font {
+        position: relative;
+        color: #fff;
+        left: -3px;
+      }
+
+      #note1:hover {
+        background-color: #69a9ff;
+      }
+
+      #note1:focus {
+        outline: none;
+      }
+
+
+    </style>
+  </head>
+  {% csrf_token %}
+  <body class="viewer-js">
+    <div class="container-fluid">
+      <div class="col-md-1 hidden-sm hidden-xs" id="viewer_left"></div>
+
+
+      
+    
+
+      <!-- 중간 영역 시작 -->
+      <div class="col-md-10 col-xs-12" id="viewer_middle">
+        <!-- export 버튼과 edit 스위치 -->
+        <div class="row">
+          <div class="col-xs-12 hidden-sm hidden-xs" id="function">
+            <input type="checkbox" id="switch" onclick="toggle(this)" />
+            <label id="label" for="switch" class="round">Edit&nbsp;&nbsp;&nbsp;&nbsp;Doc</label> <!-- label end -->   
+            <button type="button" id="note1" onclick="goNote()">
+            <font>Note</font>
+          </button>
+            <button type="button" class="btn dropdown-toggle" id="share" data-toggle="dropdown" aria-expanded="false">
+              <span class="fa fa-share"></span>
+            </button> <!-- editButtonFontname end -->
+            <ul class="dropdown-menu" role="menu" aria-labelledby="editButton">
+              <li role="presentation"><a href="#" onclick="naverShare()" data-toggle="tooltip" data-placement="right" title="네이버 공유">
+                <img class="center-block" src='{% static "note/css/pic/naver.png"%}' alt="NAVER">
+              </a></li>
+              <li class="divider"></li>
+              <li role="presentation"><a href="#" onclick="facebookShare()" data-toggle="tooltip" data-placement="right" title="페이스북 공유">
+                <img class="center-block" src='{% static "note/css/pic/facebook.jpg"%}' alt="FACEBOOK" width="20px">
+              </a></li>
+              <li class="divider"></li>
+              <li role="presentation"><a href="#" onclick="kakaostoryShare()" data-toggle="tooltip" data-placement="right" title="카카오스토리 공유">
+                <img class="center-block" src='{% static "note/css/pic/kakaostory.png"%}' alt="KAKAOSTROY" width="20px">
+              </a></li>
+              <li class="divider"></li>
+              <li role="presentation"><a href="#" onclick="tweeterShare()" data-toggle="tooltip" data-placement="right" title="트위터 공유">
+                <img class="center-block" src='{% static "note/css/pic/tweeter.jpg"%}' alt="TWEETER" width="20px">
+              </a></li>
+              <li class="divider"></li>
+              <li role="presentation"><a href="javascript:;" id="kakao-link-btn" data-toggle="tooltip" data-placement="right" title="카카오톡 공유">
+                <img class="center-block" src="//developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_small.png" width="20px" />
+              </a></li>
+              <li class="divider"></li>
+              <li><a id="create_pdf" data-toggle="tooltip" data-placement="right" title="PDF로 변환"><img class="center-block" src='{% static "note/css/pic/pdf.png"%}' alt="pdf" width="20px"></a></li>
+
+              <!-- <li class="divider"></li>
+              <li><a id="save" data-toggle="tooltip" data-placement="right" title="저장"><img class="center-block" src='{% static "note/css/pic/save.jpeg"%}' alt="save" width="25px"></a></li> -->
+            </ul>
+             
+          </div> <!-- function end -->
+        </div>  <!-- row end -->
+
+        <div class="row hide" id="editButtons">
+          <div class="col-xs-12 btn-toolbar center-block">
+            <div class="btn-group">
+              <button class="btn-default dropdown-toggle" type="button" id="editButton" data-toggle="dropdown" aria-expanded="false">
+                <span class="fa fa-text-height"></span>
+                <span class="caret"></span>
+              </button> <!-- editButton end -->
+              <ul class="dropdown-menu" role="menu" aria-labelledby="editButton">
+                <li role="presentation"><a href="javascript:htmledit('fontSize',1)">1</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',2)">2</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',3)">3</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',4)">4</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',5)">5</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',6)">6</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',7)">7</a></li>
+              </ul>
+            </div>  <!-- btn -group end -->
+            <div class="btn-group">
+              <button class="btn-default dropdown-toggle" type="button" id="editButton" data-toggle="dropdown" aria-expanded="false">
+                <span class="fa fa-font"></span>
+                <span class="caret"></span>
+              </button> <!-- editButtonFontname end -->
+              <ul class="dropdown-menu" role="menu" aria-labelledby="editButton">
+                <li role="presentation"><a href="javascript:htmledit('fontname','바탕체')">바탕체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','굴림체')">굴림체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','궁서체')">궁서체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','돋움체')">돋움체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','고딕체')">고딕체</a></li>
+              </ul>
+            </div>  <!-- btn-group end -->
+            <div class="btn-group" class="bold">
+              <button id="editButton" onclick="htmledit('Bold')" data-toggle="tooltip" data-placement="right" title="진하게"><span class="fa fa-bold" aria-hidden="true"></span></button>
+            </div>  <!-- bold end -->
+            <div class="btn-group" class="italic">
+              <button id="editButton" value="Italic" onclick="htmledit('Italic')" data-toggle="tooltip" data-placement="right" title="기울게"><span class="fa fa-italic" aria-hidden="true"></span></button>
+            </div>  <!-- italic end -->
+            <div class="btn-group" class="underbar">
+              <button type="button" id="editButton" onclick="htmledit('Underline')" data-toggle="tooltip" data-placement="right" title="밑줄"><span class="fa fa-underline" aria-hidden="true"></span></button>
+            </div>  <!-- underbar end -->
+            <div class="btn-group" class="bar">
+              <button type="button" id="editButton" onclick="htmledit('StrikeThrough')" data-toggle="tooltip" data-placement="right" title="취소선"><span class="fa fa-strikethrough" aria-hidden="true"></span></button>
+            </div>  <!-- bar end -->
+            <div class="btn-group" class="save">
+              <button type="button" id="editButton" value="save" onclick="saveAs('test.html');" data-toggle="tooltip" data-placement="right" title="HTML로 저장"><span class="fa fa-save" aria-hidden="true"></span></button>
+            </div>  <!-- save end -->
+            <div class="btn-group" class="alignLeft">
+              <button type="button" id="editButton" value="왼쪽 정렬" onclick="htmledit('justifyleft')" data-toggle="tooltip" data-placement="right" title="왼쪽 정렬"><span class="fa fa-align-left" aria-hidden="true"></span></button>
+            </div>  <!-- alignLeft end -->
+            <div class="btn-group" class="alignCenter">
+              <button type="button" id="editButton" value="가운데 정렬" onclick="htmledit('justifycenter')" data-toggle="tooltip" data-placement="right" title="가운데 정렬"><span class="fa fa-align-center" aria-hidden="true"></span></button>
+            </div>  <!-- alignCenter end -->
+            <div class="btn-group" class="alignRight">
+              <button type="button" id="editButton" value="오른쪽 정렬" onclick="htmledit('justifyright')" data-toggle="tooltip" data-placement="right" title="오른쪽 정렬"><span class="fa fa-align-right" aria-hidden="true"></span></button>
+            </div>  <!-- alignRight end -->
+            <div class="btn-group" class="fontHighlight">
+              <button type="button" id="editButton" value="형광펜" onclick="htmledit('hiliteColor', 'yellow')" data-toggle="tooltip" data-placement="right" title="형광펜"><span class="fa fa-highlighter" aria-hidden="true"></span></button>
+            </div>  <!-- fontHighlight end -->
+            <div class="btn-group" id="insertImage">
+              <input type='file' id='upload' name='upload' accept=".jpg, .jpeg, .png" />
+              <button type="button" id="btn-upload" data-toggle="tooltip" data-placement="right" title="사진 첨부"><span class="fa fa-image" aria-hidden="true"></span></button>
+            </div>
+            <!-- <div class="btn-group" id="openhtml">
+              <input type='file' id='uploadhtml' name='upload' accept=".html, .htm" />
+              <button type="button" id="btn-upload-html"><span class="fa fa-open" aria-hidden="true"></span></button>
+            </div> -->
+            <div class="btn-group">
+              <button type="button" id="editButton" class="print" onclick="print()" data-toggle="tooltip" data-placement="right" title="인쇄"><span class="fa fa-print" aria-hidden="true"></span></button>
+            </div>  <!-- print end -->
+          </div> <!-- col-xs-12 end -->
+        </div>  <!-- editButtons end -->
+
+        <!-- 최종적인 메모가 출력되는 부분 -->
+        <div class="row">
+          <div class="col-xs-12" id="wrap">
+            {{rightdata|safe}}
+          </div> <!-- wrap end -->
+        </div>  <!-- row end -->
+      </div>  <!-- col-lg-5 end--> <!-- 중간 영역 끝 -->
+<!--       <div style="display:none">
+        {{leftdata|safe}}
+      </div> -->
+
+      <!-- 오른쪽 영역 시작 -->
+      <div class="col-md-1 hidden-sm hidden-xs" id="viewer_right"></div>
+
+    </div>  <!-- /container-fluid -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" >
+
+      //#을 달았을때 새 창을 열어 google을 통해 검색
+      function goSearch(obj) {
+        window.open("https://www.google.com/search?sxsrf=ALeKk02qkq-plx98IN_HguIE8aMQt_Mt-g%3A1587651913229&source=hp&ei=SaWhXvTCC9CJoASZnYX4BQ&q="+$(obj).attr('attr-a'),"child","");
+      }
+
+      //note 페이지로 되돌아가는 함수
+      function goNote() {
+          var jbHtml = $('.viewer-js').html();
+              console.log(jbHtml);
+              var memoTempJq = jbHtml.substring(jbHtml.indexOf("memoTemp")-9, jbHtml.indexOf("<!-- memoTemp end -->")+21);
+
+              var memoFinalJq = jbHtml.substring(jbHtml.indexOf("memoFinal")-9 , jbHtml.indexOf("<!-- memoFinal end -->")+22);
+              var memo = memoTempJq+"@@"+memoFinalJq
+              var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+              var hash = new Array(); //해시태그 붙은 문자열 배열
+              $('#memoTemp').find('a').each(function() {
+                hash.push( this.dataset.value)
+              });
+              $('#memoFinal').find('a').each(function() {
+                hash.push(this.dataset.value)
+              });
+
+              $.ajax({   //DB에 내용 저장
+                url:"{%url 'note:insertDB' %}",
+                type:'POST',
+                data:{'msg':memo,
+                  'csrfmiddlewaretoken': csrf
+                },
+                success: (function(data){ }),
+              });
+
+              for(var i=0; i<hash.length; i++) {   //DB에 해시태그 저장
+                $.ajax({
+                  url:"{%url 'note:savehash' %}",
+                  type:'POST',
+                  data:{'hash': hash[i],
+                    'csrfmiddlewaretoken': csrf
+                  },
+                  success: (function(data){ }),
+                });
+              }
+              // alert("저장되었습니다.");
+        location.href="{%url 'note:index' %}";
+      }
+
+      //이부분은 edit doc 버튼을 눌렀을 때 edit 부분을 입력하면 버튼들이 있는 div를 숨겼다가 폈다 하는 부분을 구현
+      var editButtons = document.getElementById('editButtons');
+      var memoFinal = document.getElementById('memoFinal');
+      $(memoFinal).css('height', '100%');
+
+      function toggle(el) {
+        if(el.checked == false) {
+          editButtons.setAttribute('class', 'hide');
+          memoFinal.setAttribute('contenteditable', 'false');
+        }
+
+        else {
+          editButtons.setAttribute('class', '');
+          memoFinal.setAttribute('contenteditable', 'true');
+        }
+      }
+
+      //edit 영역 효과주는 스크립트 부분
+      function htmledit(execute, values) {
+        if(values == null) {
+          document.execCommand(execute);
+        } else {
+          document.execCommand(execute, "", values)
+        }
+      }
+
+      // pdf 변환
+      $('#create_pdf').click((e) => {
+        //pdf_wrap을 canvas객체로 변환
+        html2canvas(document.querySelector("#memoFinal")).then(canvas=> {
+          
+          var imgData = canvas.toDataURL('image/png'); //캔버스를 이미지로 변환
+
+          var imgWidth = 210;
+          var pageHeight = 297;
+          var imgHeight = canvas.height * imgWidth / canvas.width;
+          var heightLeft = imgHeight;
+
+          var doc = new jsPDF('p', 'mm'); //jspdf객체 생성
+          var position = 0;
+
+          doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            doc.addPage();
+            doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+          }
+
+          doc.save('RapidNote.pdf'); //pdf저장
+        });
+        
+        });
+
+
+        //공유하기 누르면 저장
+      $('#share').click((e) => {
+              var jbHtml = $('.no-js').html();
+              console.log(jbHtml);
+              var memoTempJq = jbHtml.substring(jbHtml.indexOf("memoTemp")-9, jbHtml.indexOf("<!-- memoTemp end -->")+21);
+
+              var memoFinalJq = jbHtml.substring(jbHtml.indexOf("memoFinal")-9 , jbHtml.indexOf("<!-- memoFinal end -->")+22);
+              var memo = memoTempJq+"@@"+memoFinalJq
+              var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+              var hash = new Array(); //해시태그 붙은 문자열 배열
+              $('#memoTemp').find('a').each(function() {
+                hash.push( this.dataset.value)
+              });
+              $('#memoFinal').find('a').each(function() {
+                hash.push(this.dataset.value)
+              });
+
+              $.ajax({   //DB에 내용 저장
+                url:"{%url 'note:insertDB' %}",
+                type:'POST',
+                data:{'msg':memo,
+                  'csrfmiddlewaretoken': csrf
+                },
+                success: (function(data){ }),
+              });
+
+              for(var i=0; i<hash.length; i++) {   //DB에 해시태그 저장
+                $.ajax({
+                  url:"{%url 'note:savehash' %}",
+                  type:'POST',
+                  data:{'hash': hash[i],
+                    'csrfmiddlewaretoken': csrf
+                  },
+                  success: (function(data){ }),
+                });
+              }
+              // alert("저장되었습니다.");
+        });
+
+      //html 저장
+      function saveAs(fileName){ 
+        var agent = navigator.userAgent; 
+        if(agent.indexOf('Trident')>0){ 
+          document.execCommand('SaveAs', true, fileName); 
+        }else{ 
+          var html = document.documentElement.innerHTML; 
+          if(agent.indexOf('Firefox')>0 && window.btoa){ 
+            window.location = 'data:application/octet-stream;base64,'+window.btoa(unescape(encodeURIComponent(html))); 
+          } else if (Blob && window.URL.createObjectURL){ 
+            var type = 'text/html' 
+            var a = document.createElement('a');                     
+            a.download = fileName; 
+            var data = new Blob([html], {type: type}); 
+            a.href = window.URL.createObjectURL(data); 
+            a.dataset.downloadurl = [type, fileName, a.href].join(':');         
+            a.click(); 
+          }else{ 
+            alert('지원하지 않는 브라우저 입니다.'); 
+         } 
+       } 
+     }
+
+
+
+      //서버를 이용하지 않고 이미지 구현
+      var upload = document.querySelector('#upload');
+      var viewer = document.querySelector('#memoFinal');
+
+      $(function () {
+        $('#btn-upload').click(function (e) {
+          e.preventDefault();
+          $('#upload').click();
+        });
+      });
+ 
+      upload.addEventListener('change', function (e) {
+        var get_file = e.target.files;
+ 
+        var image = document.createElement('img');
+ 
+        /* FileReader 객체 생성 */
+        var reader = new FileReader();
+ 
+        /* reader 시작시 함수 구현 */
+        reader.onload = (function (aImg) {
+ 
+            return function (e) {
+                /* base64 인코딩 된 스트링 데이터 */
+                aImg.src = e.target.result
+            }
+        })(image)
+ 
+        if(get_file){
+            /* 
+                get_file[0] 을 읽어서 read 행위가 종료되면 loadend 이벤트가 트리거 되고 
+                onload 에 설정했던 return 으로 넘어간다.
+                이와 함게 base64 인코딩 된 스트링 데이터가 result 속성에 담겨진다.
+            */
+            reader.readAsDataURL(get_file[0]);
+        }
+
+        //이미지의 속성을 미리 조정
+        image.setAttribute('style', 'max-width: 50%; height: auto;');
+
+        viewer.appendChild(image);
+      })
+
+      //프린트 기능
+      $(".print").click(function(){
+        $("#memoFinal").printThis();
+      });
+      
+      //세션 값이 없을 때 에디트 툴 숨키기
+      var session = "{{request.session.user_id}}";
+
+      var switchButton = document.getElementById('switch');
+      var labelButton = document.getElementById('label');
+      var note = document.getElementById('note1');
+
+      $(document).ready(function(){
+        if(session == '') {
+          switchButton.classList.add('hide');
+          labelButton.classList.add('hide');
+          note.classList.add('hide');
+        } else {
+          switchButton.classList.remove('hide');
+          labelButton.classList.remove('hide');
+          note.classList.remove('remove');
+        }
+      });
+
+            //naver 블로그로 공유
+      //현재 로컬서버라 안되지만 다른 URL 입력시 사용됨 확인
+      function naverShare() {
+        var url = encodeURI(encodeURIComponent(document.location.href));
+        //왜 주소를 못 가져오지?
+
+        var title = encodeURI(document.title);
+        var shareURL = "https://share.naver.com/web/shareView.nhn?url=" + url + "&title=" + title;
+        window.open(shareURL, 'naversharedialog', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=800');
+
+      }
+
+      //FACEBOOK 공유
+      function facebookShare() {
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' +encodeURIComponent(document.URL)+'&t='+encodeURIComponent(document.title), 'facebooksharedialog', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=800,width=600');
+        return false;
+      }
+
+
+      //kakaostory 공유
+      function kakaostoryShare() {
+        window.open('https://story.kakao.com/s/share?url=' +encodeURIComponent(document.URL), 'kakaostorysharedialog', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes, height=850,width=600');
+        return false;
+      }
+
+      //tweeter 공유
+      function tweeterShare() {
+        window.open('https://twitter.com/intent/tweet?text=[%EA%B3%B5%EC%9C%A0]%20' +encodeURIComponent(document.URL)+'%20-%20'+encodeURIComponent(document.title), 'twittersharedialog', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=850,width=600');
+        return false;
+
+      }
+
+      // 카카오톡 공유를 위한 스크립트
+      //<![CDATA[
+      // // 사용할 앱의 JavaScript 키를 설정해 주세요.
+      Kakao.init('20d7b3a74b50935de296f762ebaab0b3');
+      // // 카카오링크 버튼을 생성합니다. 처음 한번만 호출하면 됩니다.
+      Kakao.Link.createDefaultButton({
+        container: '#kakao-link-btn',
+        objectType: 'feed',
+        content: {
+          title: document.title,
+          description: '빠르고 편한 필기',
+          imageUrl: document.images[4].src,
+          link: {
+            webUrl: document.location.href,
+            mobileWebUrl: document.location.href
+          }
+        },
+        // social: {
+        //   likeCount: 0,
+        //   commentCount: 0,
+        //   sharedCount: 0
+        // },
+        buttons: [
+          {
+            title: 'RapidNote Memo',
+            link: {
+              mobileWebUrl: document.location.href,
+              webUrl: document.location.href
+            }
+          }  
+        ]
+      });
+      //$('#memoFinal').css('background-color', '#FFFFFF');
+    //]]>
+
+    
+    </script>
+  </body>
+</html>

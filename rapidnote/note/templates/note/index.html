@@ -1,0 +1,1321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- 수정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>RapidNote</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+    <!-- 합쳐지고 최소화된 최신 CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+     <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"> 
+    <!-- icon 링크 -->
+    <script src="https://kit.fontawesome.com/04a6f97450.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+      integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+      crossorigin="anonymous"></script>
+
+    <!-- css -->
+    <link rel="stylesheet" type="text/css" href='{% static "note/css/normalize.css"%}' />
+    <link rel="stylesheet" type="text/css" href='{% static "note/css/demo.css"%}'  />
+    <link rel="stylesheet" type="text/css" href='{% static "note/css/bottom-area.css"%}'  />
+
+    <!-- pdf 변환을 위한 스크립트 -->
+    <script type = "text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+    <script type = "text/javascript" src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <!-- 프린트를 위한 스크립트-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/printThis/1.15.0/printThis.js"></script>
+
+    <!-- 카카오톡 -->
+    <script src="//developers.kakao.com/sdk/js/kakao.min.js"></script>
+
+
+  </head>
+  <body>
+    <header>
+      <div class="container-fluid" id="rn-nav">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="col-xs-7">
+          <button class="hidden-lg hidden-md" id="smXsNav" onclick="openNav()"><span class="fa fa-bars"></span></button>
+          <button class="hidden-sm hidden-xs" id="hamburgerOpen"><span class="fa fa-bars"></span></button>
+          <button class="hidden-sm hidden-xs hide" id="hamburgerClose"><span class="fa fa-bars"></span></button>
+          <a href="{%url 'note:login'%}">RapidNote</a>
+        </div>
+
+        <div class="col-xs-5">
+          <form class="hidden-sm hidden-xs" role="search">
+            <input id="search_hash" type="text" class="search" placeholder="#" >
+            <button class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" id="searchBtn" onclick="searchHash()"><span class="glyphicon glyphicon-search"></span></button>
+            <ul id="hashlist" class="dropdown-menu" role="menu" aria-labelledby="searchBtn">
+              {% include 'note/hash.html' %}
+            </ul>
+            <a href="{%url 'note:myPage'%}">My Page</a>
+            <a href="{%url 'note:download'%}">Download</a>
+          </form>
+          <button class="hidden-lg hidden-md dropdown-toggle pull-right" data-toggle="dropdown" aria-expanded="true" id="smXs1"><img src='{% static "note/css/pic/logo.png"%}' alt="logo" height="20" width="20"></button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="smXs1" style="font-size: 1.2em; width: 40px;">
+              <a href="{%url 'note:myPage' %}">My Page</a>
+              <a href="{%url 'note:download' %}">Download</a>
+            </ul>
+        </div>
+      </div><!-- container end -->
+    </header>
+
+
+      <div class="hidden-sm hidden-xs task col-task-2">  <!-- A Task 부분의 시작 -->
+        <div class="btn-group">
+          <button class="hidden-md hidden-sm hidden-xs dropdown-toggle disabled" id="myIcon" data-toggle="dropdown" aria-expanded="true"><span class="fa fa-user"></span></button>
+          <button class="hidden-sm hidden-xs dropdown-toggle hidden-lg" id="myIcon1" data-toggle="dropdown" aria-expanded="true"><span class="fa fa-user"></span></button>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="myIcon">
+            <li class="text-center" role="presentation"><strong>{{ request.session.user_id}}</strong></li>
+            <li class="divider"></li>
+            <li role="presentation"><a href="{%url 'note:logout'%}">Logout</a></li>
+          </ul>
+          <font class="hidden-md" id="myIconId">{{ request.session.user_id}}</font>
+        </div>
+        <button class="hidden-md hidden-sm hidden-xs" id="logout" onclick="location.href=' {% url 'note:logout' %}'">Logout</button>
+        <div class="row" id="taskDropdown">
+          <div class="dropdown">         
+            <button class="btn dropdown-toggle hidden-sm hidden-xs" type="button" id="taskList" data-toggle="dropdown" aria-expanded="true">
+              <div class="hidden-sm hidden-xs selectedTask1 hidden-md" id="selectedTask">{{ request.session.filepath }}<span class="caret"></span> <!-- caret end --></div>
+              <div class="hidden-sm hidden-xs selectedTask2 hidden-lg" id="selectedTask" data-toggle="tooltip" data-placement="right" title="{{ request.session.filepath }}"><span class="far fa-folder"></span><span class="caret"></span> <!-- caret end --></div>
+            </button> <!-- taskList end -->
+            <ul class="dropdown-menu taskList" id="taskadd" role="menu" aria-labelledby="taskList">
+              {% include 'note/task.html' %}
+            </ul> <!-- dropdown-menu end -->
+          </div>  <!-- dropdown end -->
+        </div>  <!-- taskDropdown end --> <!-- A task 부분 끝 -->
+        
+        
+        <!-- lg ~ md 사이즈에서 출력되는 파일 목록 -->
+        <!-- task 안에 있는 메모들의 목록을 출력하는 부분 -->
+        <!-- 백앤드 연동시 메모의 갯수만큼의 반복문을 돌릴 경우 li 영역으로 돌리면 됨 -->
+        <div class="row"> <!-- file 영역 시작 -->
+          <ul id="memoadd" class="nav nav-pills nav-stacked" >
+             {% include 'note/memo.html' %}
+          </ul> <!-- ul end -->  
+        </div>  <!-- row end -->
+      </div> <!-- task end --> <!-- file 영역 끝 -->
+
+      
+    
+
+      <!-- 중간 영역 시작 -->
+      <div class="col-middle-5" id="middle">
+        <div class="row" id="middleBtn">
+          <button id="currentPath">{{ request.session.filepath }}</button>
+          <font>/</font>
+          <button id="currentName">{{ request.session.filename }}</button>
+          <button class="hidden-sm hidden-xs pull-right" id="tempSave" onclick="save()">Save</button>
+          <button class="hidden-lg hidden-md pull-right" id="tempSave" onclick="saveSmall()">Save</button>
+        </div>
+        <!-- 임시의 메모를 출력하는 부분 -->
+        <div class="row">
+          {{leftdata|safe}}
+        </div> <!-- row end -->
+
+        <!-- textarea로 메모를 입력하는 부분 -->
+        <div class="row textarea">
+          <textarea class="center-block" 
+         rows="6" id="memoInput" required=""></textarea>  <!-- memoInput end -->
+          <input type="button" id="memoSend" value="ENTER" /> <!-- memoSend end -->
+        </div>  <!-- row end -->
+      </div>  <!-- col-lg-5 end--> <!-- 중간 영역 끝 -->
+
+
+
+      <!-- 오른쪽 영역 시작 -->
+      <div class="hidden-sm hidden-xs col-final-5" id="final">
+        <div class="hidden-sm hidden-xs" id="fianlBtn">
+          <button type="button" id="viewer" class="pull-right" onclick="viewersave()">
+            Viewer
+          </button>
+          <input type="checkbox" id="switch" onclick="toggle(this)" />
+          <label id="label" for="switch" class="round pull-right">Edit&nbsp;&nbsp;&nbsp;&nbsp;Doc</label> <!-- label end -->
+          
+        </div><!-- col-xs-5 end -->
+        <div class="row hide" id="editButtons">
+          <div class="col-xs-12 btn-toolbar center-block">
+            <div class="btn-group">
+              <button class="btn-default dropdown-toggle" type="button" id="editButton" data-toggle="dropdown" aria-expanded="false">
+                <span class="fa fa-text-height"></span>
+                <span class="caret"></span>
+              </button> <!-- editButton end -->
+              <ul class="dropdown-menu" role="menu" aria-labelledby="editButton">
+                <li role="presentation"><a href="javascript:htmledit('fontSize',1)">1</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',2)">2</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',3)">3</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',4)">4</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',5)">5</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',6)">6</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontSize',7)">7</a></li>
+              </ul>
+            </div>  <!-- btn -group end -->
+            <div class="btn-group">
+              <button class="btn-default dropdown-toggle" type="button" id="editButton" data-toggle="dropdown" aria-expanded="false">
+                <span class="fa fa-font"></span>
+                <span class="caret"></span>
+              </button> <!-- editButtonFontname end -->
+              <ul class="dropdown-menu" role="menu" aria-labelledby="editButton">
+                <li role="presentation"><a href="javascript:htmledit('fontname','바탕체')">바탕체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','굴림체')">굴림체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','궁서체')">궁서체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','돋움체')">돋움체</a></li>
+                <li role="presentation"><a href="javascript:htmledit('fontname','고딕체')">고딕체</a></li>
+              </ul>
+            </div>  <!-- btn-group end -->
+            <div class="btn-group" class="bold">
+              <button id="editButton" onclick="htmledit('Bold')" data-toggle="tooltip" data-placement="right" title="진하게"><span class="fa fa-bold" aria-hidden="true"></span></button>
+            </div>  <!-- bold end -->
+            <div class="btn-group" class="italic">
+              <button id="editButton" value="Italic" onclick="htmledit('Italic')" data-toggle="tooltip" data-placement="right" title="기울게"><span class="fa fa-italic" aria-hidden="true"></span></button>
+            </div>  <!-- italic end -->
+            <div class="btn-group" class="underbar">
+              <button type="button" id="editButton" value="abc" onclick="htmledit('Underline')" data-toggle="tooltip" data-placement="right" title="밑줄"><span class="fa fa-underline" aria-hidden="true"></span></button>
+            </div>  <!-- underbar end -->
+            <div class="btn-group" class="bar">
+              <button type="button" id="editButton" value="abc" onclick="htmledit('StrikeThrough')" data-toggle="tooltip" data-placement="right" title="취소선"><span class="fa fa-strikethrough" aria-hidden="true"></span></button>
+            </div>  <!-- bar end -->
+            <div class="btn-group" class="save">
+              <button type="button" id="editButton" value="save" onclick="saveAs('test.html');" data-toggle="tooltip" data-placement="right" title="HTML로 저장"><span class="fa fa-save" aria-hidden="true"></span></button>
+            </div>  <!-- save end -->
+            <div class="btn-group" class="alignLeft">
+              <button type="button" id="editButton" value="왼쪽 정렬" onclick="htmledit('justifyleft')" data-toggle="tooltip" data-placement="right" title="왼쪽 정렬"><span class="fa fa-align-left" aria-hidden="true"></span></button>
+            </div>  <!-- alignLeft end -->
+            <div class="btn-group" class="alignCenter">
+              <button type="button" id="editButton" value="가운데 정렬" onclick="htmledit('justifycenter')" data-toggle="tooltip" data-placement="right" title="가운데 정렬"><span class="fa fa-align-center" aria-hidden="true"></span></button>
+            </div>  <!-- alignCenter end -->
+            <div class="btn-group" class="alignRight">
+              <button type="button" id="editButton" value="오른쪽 정렬" onclick="htmledit('justifyright')" data-toggle="tooltip" data-placement="right" title="오른쪽 정렬"><span class="fa fa-align-right" aria-hidden="true"></span></button>
+            </div>  <!-- alignRight end -->
+            <div class="btn-group" class="fontHighlight">
+              <button type="button" id="editButton" value="형광펜" onclick="htmledit('hiliteColor', 'yellow')"><span class="fa fa-highlighter" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="형광펜"></span></button>
+            </div>  <!-- fontHighlight end -->
+            <div class="btn-group" id="insertImage">
+              <input type='file' id='upload' name='upload' accept=".jpg, .jpeg, .png, .gif" />
+              <button type="button" id="btn-upload" data-toggle="tooltip" data-placement="right" title="사진 첨부"><span class="fa fa-image" aria-hidden="true"></span></button>
+            </div>
+            <!-- <div class="btn-group" id="openhtml">
+              <input type='file' id='uploadhtml' name='upload' accept=".html, .htm" />
+              <button type="button" id="btn-upload-html"><span class="fa fa-open" aria-hidden="true"></span></button>
+            </div> -->
+          </div> <!-- col-xs-12 end -->
+        </div>  <!-- editButtons end -->
+
+        <!-- 최종적인 메모가 출력되는 부분 -->
+        <div class="row">
+          <div class="col-xs-12" id="wrap">
+            {{rightdata|safe}}
+          </div> <!-- wrap end -->
+        </div>  <!-- row end -->
+      </div>  <!-- col-lg-5 end --> <!-- 오른쪽 영역 끝 -->
+      
+
+
+
+      <!-- 하나의 텍스트 블록을 끌었을 때 생기는 드랍박스 -->
+      <div id="drop-area" class="drop-area hidden-sm hidden-xs"> 
+        <div>
+          <div id="plain_block" class="drop-area__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="title_block" class="drop-area__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="bold_block" class="drop-area__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="italic_block" class="drop-area__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="color_block" class="drop-area__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="trashCan_block" class="drop-area__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div> 
+        </div> 
+      </div>  <!-- drop-area end -->
+
+      <!-- 텍스트 그룹을 끌었을 때 생기는 드랍박스 -->
+      <div id="drop-area-group" class="drop-area-group hidden-sm hidden-xs"> 
+        <div> 
+          <div id="plain_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="title_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="bold_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="italic_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="color_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="liOlTag_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+          <div id="liUlTag_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div> 
+          <div id="trashCan_group" class="drop-area-group__item" ondragenter="dragenter(event)" ondragleave="dragleave(event)" ondrop="drop(event)" ondragover="allowDrop(event)"></div> 
+        </div> 
+      </div>  <!-- drop-area-group end -->
+
+      <!-- sm~xs에서의 네비게이션 바 (테스크 선택은 아직 구현하지 않고 파일만 존재) -->
+      <div class="sidenav" id="mySidenav">
+        <div class="sidenav-myList">
+          <button type="button" class="hidden-md hidden-lg" id="sideMyIcon"><span class="fa fa-user"></span>{{ request.session.user_id}}</button>     
+          <button class="hidden-lg hidden-md" id="sideLogout" onclick="location.href=' {% url 'note:logout' %}'">Logout</button>
+        </div> 
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"><span class="fa fa-times"></span></a>
+        <button class="dropdown-btn" id="sm-selectedTask">{{ request.session.filepath }} 
+          <i class="fa fa-caret-down"></i>
+        </button>
+        <!-- A Task 목록들 출력 -->
+        <div id="sm-tasklist" class="dropdown-container">
+          {% include 'note/task.html' %}
+        </div>   <!-- dropdown-container end -->
+        <!-- 파일 목록들 출력 -->
+        <div id="sm-memolist">
+          {% include 'note/memo.html' %}
+        </div>
+        </button>
+      </div> <!-- sidenav end -->
+    
+
+
+    <!-- Memo Modal -->
+    <div class="modal fade" id="memoModal" tabindex="-1" role="dialog" aria-labelledby="memoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">새로운 메모</h4>
+          </div>
+	        <div class="modal-body">
+	            {% csrf_token %}
+	            <div class="input-group">
+	              <span class="input-group-addon" id="basic-addon1"><i class="fa fa-edit"></i></span>
+	              <input type="text" id="plusmemo" class="form-control" placeholder="메모 제목을 입력해주세요" aria-describedby="basic-addon1">
+	            </div>
+	        </div>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+	          <button type="button" id="memobtn" class="btn btn-primary">추가</button>
+	        </div>
+        </div>  <!-- modal-content end -->
+      </div>  <!-- modal-dialog end -->
+    </div>  <!-- memoModal end -->
+
+
+    <!-- task Modal -->
+    <div class="modal fade" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">새로운 폴더</h4>
+          </div>
+        	<div class="modal-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="basic-addon1"><i class="fa fa-edit"></i></span>
+              <input type="text" class="form-control" id="plustask"placeholder="폴더명을 입력해주세요" aria-describedby="basic-addon1">
+            </div>
+	        </div>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+	          <button type="button"  id="taskbtn" class="btn btn-primary">추가</button>
+	        </div>
+          
+        </div>  <!-- modal-content end -->
+      </div>  <!-- modal-dialog end -->
+    </div>  <!-- taskModal end -->
+
+    <!-- renameTask Modal -->
+    <div class="modal fade" id="renameTaskModal" tabindex="-1" role="dialog" aria-labelledby="renameTaskModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">폴더명 수정하기</h4>
+          </div>
+          <div class="modal-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="basic-addon1"><i class="fa fa-edit"></i></span>
+              <input type="text" id="renameTask" class="form-control" placeholder="폴더명을 입력해주세요" aria-describedby="basic-addon1">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+            <button type="button"  id="renameTaskbtn" class="btn btn-primary">변경</button>
+          </div>
+          
+        </div>  <!-- modal-content end -->
+      </div>  <!-- modal-dialog end -->
+    </div>  <!-- renameTaskModal end -->
+
+    <!-- renameMemo Modal -->
+    <div class="modal fade" id="renameMemoModal" tabindex="-1" role="dialog" aria-labelledby="renameMemoModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">메모 제목 수정하기</h4>
+          </div>
+          <div class="modal-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="basic-addon1"><i class="fa fa-edit"></i></span>
+              <input type="text" id="renameMemo" class="form-control" placeholder="메모 제목을 입력해주세요" aria-describedby="basic-addon1">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+            <button type="button"  id="renameMemobtn" class="btn btn-primary" >변경</button>
+          </div>
+          
+        </div>  <!-- modal-content end -->
+      </div>  <!-- modal-dialog end -->
+    </div>  <!-- renameTaskModal end -->
+
+    <script type="text/javascript" >
+      //햄버거 버튼
+      $('#hamburgerOpen').click(function(){
+        $('.task').removeClass('col-task-2');
+        $('#middle').removeClass('col-middle-5');
+        $('#final').removeClass('col-final-5');
+        $('.task').addClass('col-task');
+        $('#middle').addClass('col-middle');
+        $('#final').addClass('col-final');
+        $('#hamburgerOpen').addClass('hide');
+        $('#hamburgerClose').removeClass('hide');
+        $('#logout').addClass('hide');
+        $('#myIcon').addClass('hide');
+        $('#myIconId').addClass('hide');
+        $('#myIcon1').removeClass('hidden-lg');
+        $('.selectedTask1').addClass('hide');
+        $('.selectedTask2').removeClass('hidden-lg');
+        $('.memoname1').addClass('hide');
+        $('.memoname2').removeClass('hidden-lg');
+      });
+
+      $('#hamburgerClose').click(function(){
+        $('.task').removeClass('col-task');
+        $('#middle').removeClass('col-middle');
+        $('#final').removeClass('col-final');
+        $('.task').addClass('col-task-2');
+        $('#middle').addClass('col-middle-5');
+        $('#final').addClass('col-final-5');
+        $('#hamburgerClose').addClass('hide');
+        $('#hamburgerOpen').removeClass('hide');
+        $('#logout').removeClass('hide');
+        $('#myIcon').removeClass('hide');
+        $('#myIconId').removeClass('hide');
+        $('#myIcon1').addClass('hidden-lg');
+        $('.selectedTask1').removeClass('hide');
+        $('.selectedTask2').addClass('hidden-lg');
+        $('.memoname1').removeClass('hide');
+        $('.memoname2').addClass('hidden-lg');
+      });
+
+      //editActive 추가
+      $(document).ready(function() {
+        var list = $('#memoadd').find('a').get();
+        for(var i=0; i<list.length; i++) {
+          if(list[i].getAttribute('value') == $('#currentName').text())
+          {
+            list[i].classList.add('editActive');
+            break;
+          }
+        }
+      });
+
+      //task추가
+      $('#taskbtn').on("click", function(e) {
+        var task = $.trim($('#plustask').val());
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        if(task == '') {
+          alert("내용을 입력해주세요.");
+        }
+        else {
+          $.ajax({
+            url:"{%url 'note:plustask' %}",
+            type:"POST",
+            data : {
+              'filepath': task,
+              'csrfmiddlewaretoken': csrf
+              },
+
+            success: (function(data){
+              if(data == "unavailable") {
+                alert("사용 불가능한 이름입니다.(/: 사용 불가)");
+              }
+              else if(data == "duplicated") {
+                alert("중복된 이름입니다.");
+              }
+              else {
+                $('#taskModal').modal('hide');
+                $('#taskadd').empty();
+                $('#taskadd').append(data);
+                //sm, xs 사이즈 부분
+                $('#sm-tasklist').empty();
+                $('#sm-tasklist').append(data);
+              }
+            }), //success종료
+          }); //ajax 종료
+        }
+      }); //taskbtn click 버튼 종료
+
+      //memo추가
+      $('#memobtn').on("click", function(e) {
+        var task = $.trim($('#selectedTask').text());
+        var memo = $.trim($('#plusmemo').val());
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        if(memo == '') {
+          alert("내용을 입력해주세요.");
+        }
+        else {
+          $.ajax({
+            url:"{%url 'note:plusmemo' %}",
+            type:"POST",
+            data : {
+              'filepath': task,
+              'filename': memo,
+              "csrfmiddlewaretoken": csrf
+              },
+
+            success: (function(data){
+              if(data == "unavailable") {
+                alert("사용 불가능한 이름입니다.(/: 사용 불가)");
+              }
+              else if(data == "duplicated") {
+                alert("중복된 이름입니다.");
+              }
+              else {
+                $('#memoModal').modal('hide');
+                $('#memoadd').empty();
+                $('#memoadd').append(data);
+              }
+            }), //success종료
+          }); //ajax 종료
+        }
+      }); //memobtn click 버튼 종료
+            
+      //task 변경
+      $(document).on("click", ".task_list", function(e) {
+        var task = e.target.getAttribute("value");
+        $.ajax({
+          url: "{% url 'note:changetask' %}",
+          type: "GET",
+          data: {
+            'filepath': task
+            },
+
+          success: (function(data) {
+            $('#selectedTask').text(task);
+            $('#memoadd').empty();
+            $('#memoadd').append(data);
+            //sm, xs 사이즈 부분
+            $('#sm-selectedTask').text(task); 
+            $('#sm-memolist').empty();
+            $('#sm-memolist').append(data);
+          }), //success종료
+        }); //ajax 종료
+      }); //task_list click 버튼 종료
+
+     //memo 변경: 함수 없음 (페이지 이동으로 구현)
+
+      //task 이름 수정
+      $('#renameTaskbtn').on("click", function(e) { //수정필요
+        var oldName = e.currentTarget.value;
+        var newName = $.trim($('#renameTask').val());
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        if(newName == '') {
+          alert("내용을 입력해주세요.");
+        }
+        else {
+          $.ajax({
+            url:"{%url 'note:renametask' %}",
+            type:"POST",
+            data : {
+              'old': oldName,
+              'new': newName,
+              'csrfmiddlewaretoken': csrf
+              },
+
+            success: (function(data){
+              if(data == "unavailable") {
+                alert("사용 불가능한 이름입니다.(/: 사용 불가)");
+              }
+              else if(data == "duplicated") {
+                alert("중복된 이름입니다.");
+              }
+              else {
+                $('#renameTaskModal').modal('hide');
+                $('#taskadd').empty();
+                $('#taskadd').append(data);
+                if($.trim($('#selectedTask').text()) == oldName) { //사용중인 task 이름 변경시
+                  $('#selectedTask').text(newName);
+                  $('#currentPath').text(newName);
+                  $.ajax({
+                    url: "{% url 'note:changetask' %}",
+                    type: "GET",
+                    data: {'filepath': newName},
+                    success: (function(data) {
+                      $('#selectedTask').text(newName);
+                      $('#memoadd').empty();
+                      $('#memoadd').append(data);
+                      //sm, xs 사이즈 부분
+                      $('#sm-selectedTask').text(newName); 
+                      $('#sm-tasklist').empty();
+                      $('#sm-tasklist').append(data);
+                    }), //success종료
+                  }); //ajax 종료
+                }
+              }
+            }), //success종료
+          }); //ajax 종료
+        }
+      }); //버튼 click 종료
+     
+       //memo hover 시 버튼 생성
+      $('.memo_list').hover(function(){
+        $(this).find('.memoButtons').css('display', '');
+        $(this).find('#memoDate').css('display', ''); 
+      }, function(){
+        $(this).find('.memoButtons').css('display', 'none');
+        $(this).find('#memoDate').css('display', 'none'); 
+      });
+
+      //task hover 시 버튼 생성
+      $('.taskhover').hover(function(){
+        $(this).find('.taskButtons').css('display', ''); 
+      }, function(){
+        $(this).find('.taskButtons').css('display', 'none'); 
+      });
+
+
+      //task 삭제
+      $(document).on("click", ".deleteTask", function(e) {
+        var task = e.target.getAttribute("value");
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+          
+        $.ajax({
+          url:"{%url 'note:deletetask' %}",
+          type:"POST",
+          data : {
+            'filepath': task,
+            'csrfmiddlewaretoken': csrf
+          },
+
+          success: (function(data){
+            if($('#currentPath').text() == task) {  //사용중인 task 삭제
+              location.replace("{%url 'note:index' %}");
+            }
+            else {
+              $('#taskadd').empty();
+              $('#taskadd').append(data);
+              //sm, xs 사이즈 부분
+              $('#sm-tasklist').empty();
+              $('#sm-tasklist').append(data);
+            }
+          }), //success종료
+        }); //ajax 종료
+      }); //버튼 click 종료
+
+      //memo 이름 수정시 페이지 이동 막기
+      $('.renameMemo').on("click", function(e) {
+        e.preventDefault();
+      });
+
+      //memo 이름 수정
+      $('#renameMemobtn').on("click", function(e) { 
+        var task = $.trim($('#selectedTask').text());
+        var oldName = e.currentTarget.value;
+        var newName = $.trim($('#renameMemo').val());
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        if(newName == '') {
+          alert("내용을 입력해주세요.");
+        }
+        else {
+          $.ajax({
+            url:"{%url 'note:renamememo' %}",
+            type:"POST",
+            data : {
+              'filepath': task,
+              'old': oldName,
+              'new': newName,
+              'csrfmiddlewaretoken': csrf
+              },
+
+            success: (function(data){
+              if(data == "unavailable") {
+                alert("사용 불가능한 이름입니다.(/: 사용 불가)");
+              }
+              else if(data == "duplicated") {
+                alert("중복된 이름입니다.");
+              }
+              else {
+                if($('#currentName').text() == oldName) { //사용중인 task 이름 변경시
+                  $('#currentName').text(newName);
+                }
+                $('#renameMemoModal').modal('hide');
+                $('#memoadd').empty();
+                $('#memoadd').append(data);
+                //sm, xs 사이즈 부분
+                $('#sm-memolist').empty();
+                $('#sm-memolist').append(data);
+              }
+            }), //success종료
+          }); //ajax 종료
+        }
+      }); //버튼 click 종료
+
+      //memo 삭제
+      $(document).on("click", ".deleteMemo", function(e) {
+        e.preventDefault();
+        var task = $.trim($('#selectedTask').text());
+        var memo = e.target.getAttribute("value");
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+
+        $.ajax({
+          url:"{%url 'note:deletememo' %}",
+          type:"POST",
+          data : {
+            'filepath': task,
+            'filename': memo,
+            'csrfmiddlewaretoken': csrf
+            },
+
+          success: (function(data){
+            if($('#currentPath').text() == task && $('#currentName').text() == memo) {  //사용중인 memo 삭제하는 경우
+              location.replace("{%url 'note:index' %}");                                                //가장 최근 메모로 이동
+            }
+            else {
+              if($('#memoadd li').length == 2){ //선택된 태스크에 하나 남은 메모를 삭제하는 경우 사용중인 태스크로 리스트 변경(2가 한개일때임)
+                $('#selectedTask').text($('#currentPath').text());
+                $('#sm-selectedTask').text($('#currentPath').text());
+                $("li[name="+task+"]").remove();
+              }
+              $('#memoadd').empty();
+              $('#memoadd').append(data);
+              //sm, xs 사이즈 부분
+              $('#sm-memolist').empty();
+              $('#sm-memolist').append(data);
+            }
+          }), //success종료
+        }); //ajax 종료
+      }); //버튼 click 종료
+
+      //memoActive 추가
+      $(document).ready(function() {
+        var list = $('#memoadd').find('a').get();
+        for(var i=0; i<list.length; i++) {
+          if(list[i].getAttribute('value') == $('#currentName').text())
+          {
+            list[i].classList.add('memoActive');
+            break;
+          }
+        }
+      });
+
+      //task 이름 수정 모달창 데이터 넘기기
+      $('#renameTaskModal').on('show.bs.modal', function(e) {
+        var task = $(e.relatedTarget).data('task');
+        document.getElementById('renameTaskbtn').setAttribute('value', task);
+      })
+
+      //memo 이름 수정 모달창 데이터 넘기기
+      $('#renameMemoModal').on('show.bs.modal', function(e) {
+        var memo = $(e.relatedTarget).data('memo');
+        document.getElementById('renameMemobtn').setAttribute('value', memo);
+      })
+
+      //모달창 닫으면 텍스트 공백으로 초기화
+      $('.modal').on('hidden.bs.modal', function (e) {
+        $('.form-control').val('');
+      });
+
+      //temp 영역의 것을 db에 저장하기 위한 스크립트
+      function save() {
+        var jbHtml = $('.no-js').html()
+        var memoTempJq = jbHtml.substring(jbHtml.indexOf("memoTemp")-9, jbHtml.indexOf("<!-- memoTemp end -->")+21)
+        var memoFinalJq = jbHtml.substring(jbHtml.indexOf("memoFinal")-9 , jbHtml.indexOf("<!-- memoFinal end -->")+22)
+        var memo = memoTempJq+"@@"+memoFinalJq
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        var hash = new Array(); //해시태그 붙은 문자열 배열
+        $('#memoTemp').find('a').each(function() {
+          hash.push( this.dataset.value)
+        });
+        $('#memoFinal').find('a').each(function() {
+          hash.push(this.dataset.value)
+        });
+  
+        $.ajax({   //DB에 내용 저장
+          url:"{%url 'note:insertDB' %}",
+          type:'POST',
+          data:{'msg':memo,
+            'csrfmiddlewaretoken': csrf
+          },
+          success: (function(data){ }),
+        });
+
+        alert("저장되었습니다");
+
+        for(var i=0; i<hash.length; i++) {   //DB에 해시태그 저장
+          $.ajax({ 
+            url:"{%url 'note:savehash' %}",
+            type:'POST',
+            data:{'hash': hash[i],
+              'csrfmiddlewaretoken': csrf
+            },
+            success: (function(data){ }),
+          });
+        }
+        // alert("저장되었습니다.");
+      }
+
+      //temp 영역의 것을 db에 저장하기 위한 스크립트
+      function saveSmall() {
+        var jbHtml = $('.no-js').html()
+        var memoTempJq = jbHtml.substring(jbHtml.indexOf("memoTemp")-9, jbHtml.indexOf("<!-- memoTemp end -->")+21)
+        var memoFinalJq = jbHtml.substring(jbHtml.indexOf("memoFinal")-9 , jbHtml.indexOf("<!-- memoFinal end -->")+22)
+        var memo = memoTempJq+"@@"+memoFinalJq
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        var hash = new Array(); //해시태그 붙은 문자열 배열
+        $('#memoTemp').find('a').each(function() {
+          hash.push( this.dataset.value)
+        });
+        $('#memoFinal').find('a').each(function() {
+          hash.push(this.dataset.value)
+        });
+  
+        $.ajax({   //DB에 내용 저장
+          url:"{%url 'note:insertDB' %}",
+          type:'POST',
+          data:{'msg':memo,
+            'csrfmiddlewaretoken': csrf
+          },
+          success: (function(data){ }),
+        });
+
+        alert("더 많은 기능을 원하시면 앱을 이용해주세요!");
+        alert("저장되었습니다");
+
+        for(var i=0; i<hash.length; i++) {   //DB에 해시태그 저장
+          $.ajax({ 
+            url:"{%url 'note:savehash' %}",
+            type:'POST',
+            data:{'hash': hash[i],
+              'csrfmiddlewaretoken': csrf
+            },
+            success: (function(data){ }),
+          });
+        }
+        // alert("저장되었습니다.");
+      }                                    
+
+      //Drag and Drop API
+      //https://developer.mozilla.org/ko/docs/Web/API/HTML_%EB%93%9C%EB%9E%98%EA%B7%B8_%EC%95%A4_%EB%93%9C%EB%A1%AD_API
+
+      //새로고침 막기
+      function doNotReload(){
+        if( (event.ctrlKey == true && (event.keyCode == 78 || event.keyCode == 82)) || (event.keyCode == 116) ) {
+          if(confirm("새로고침 시 입력한 내용이 없어집니다. 저장하셨습니까?")) {
+            location.refresh();
+          } else {
+            //새로고침 무효화
+          event.keyCode = 0;
+          event.cancelBubble = true;
+          event.returnValue = false;
+          }
+
+          
+        } 
+      }
+      document.onkeydown = doNotReload;
+
+      function allowDrop(ev) {  //drop을 가능하게 함
+        ev.preventDefault();  //이벤트의 기본 동작을 막음
+      }
+
+      function drag(ev) { //drag 할 때 
+        ev.dataTransfer.setData("data", ev.target.id);  //drag하는 element의 id를 text type으로 전달
+
+        if(ev.target.className === 'grid__item') { //텍스트 블럭을 드래그 -> 텍스트 블럭용 드롭 메뉴 보여줌 
+          document.getElementById('drop-area-group').style.display === 'none';
+          document.getElementById('drop-area').style.display === '';
+
+          var feedBackedDropBox = document.querySelector('.drop-feedback.drop-area__item'); //체크된 드롭박스가 있는지 확인을 위한 변수
+          if(feedBackedDropBox !== null)  //체크된 드롭박스가 있으면 원상태로 바꿈
+            document.getElementById(feedBackedDropBox.id).className='drop-area__item';
+          document.getElementById('drop-area').className="drop-area show";
+        }
+
+        else {   //그룹 블럭을 드래그 -> 그룹 블럭용 드롭 메뉴 보여줌
+          document.getElementById('drop-area').style.display === 'none';
+          document.getElementById('drop-area-group').style.display === '';
+
+          var feedBackedDropBox = document.querySelector('.drop-feedback.drop-area-group__item'); //체크된 드롭박스가 있는지 확인을 위한 변수
+          if(feedBackedDropBox !== null)  //체크된 드롭박스가 있으면 원상태로 바꿈
+            document.getElementById(feedBackedDropBox.id).className='drop-area-group__item';
+          document.getElementById('drop-area-group').className="drop-area-group show";
+        }
+      }
+
+      function dragend(ev) {  //drag를 끝낸 경우 dropbox 숨기기
+        if(ev.target.className === 'grid__item')
+          document.getElementById('drop-area').className="drop-area";
+        else
+          document.getElementById('drop-area-group').className="drop-area-group";
+      }
+
+      function dragenter(ev) {  //drag element가 dropbox 위에 올라갔을 때 dropbox를 highlight
+        if(ev.target.className === 'drop-area__item')
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area__item highlight');
+        else
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area-group__item highlight');
+      }
+
+      function dragleave(ev) {  //drag element가 dropbox 위에서 벗어났을 때 dropbox의 highlight 취소
+        if(ev.target.className === 'drop-area__item')
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area__item');
+        else
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area-group__item');
+      }
+
+      function drop(ev) {   //drag element를 dropbox에 drop한 경우
+        ev.preventDefault();  //이벤트의 기본 동작을 막음
+
+        var textType = ev.target.id;
+        var elementId = ev.dataTransfer.getData("data"); //drag하는 element의 id를 받아옴
+        var element = document.getElementById(elementId); //drag하는 element
+
+        if(element.className === 'groupBlock') {   //drag하는 element가 그룹 블럭인 경우
+          var blocks = element.childNodes;
+          
+          if(textType.indexOf('trashCan') != -1)  //trashCan dropbox에 drop한 경우
+              element.remove();
+
+          else { 
+
+            if(textType.indexOf('liOlTag') != -1) {
+              var str = '';
+              for(var i=0; i<blocks.length; i++) {
+                var text = blocks[i].innerHTML;
+                str += "<li>" + text + "</li>";
+              }
+              $("#memoFinal").append("<ol>" + str + "</ol>");
+            }
+
+            else if(textType.indexOf('liUlTag') != -1) {
+              var str = '';
+              for(var i=0; i<blocks.length; i++) {
+                var text = blocks[i].innerHTML;
+                str += "<li>" + text + "</li>";
+              }
+              $("#memoFinal").append("<ul>" + str + "</ul>");
+            }
+
+            else {  
+              for(var i=0; i<blocks.length; i++) {
+                var text = blocks[i].innerHTML;
+
+                if(textType.indexOf('title') != -1) //title dropbox에 drop한 경우
+                  $("#memoFinal").append("<h1>" + text + "</h1>");
+                
+                else if(textType.indexOf('bold') != -1) //bold dropbox에 drop한 경우
+                  $("#memoFinal").append("<p><b>" + text + "</b></p>");
+                
+                else if(textType.indexOf('italic') != -1) //italic dropbox에 drop한 경우
+                  $("#memoFinal").append("<p><i>" + text + "</i></p>");
+                
+                else if(textType.indexOf('color') != -1) //color dropbox에 drop한 경우
+                  $("#memoFinal").append("<p style='color:Tomato;'>" + text + "</p>");
+              
+                else //plain drop box에 drop한 경우
+                  $("#memoFinal").append("<p>" + text + "</p>");
+              }
+            }
+            element.remove(); //그룹 블럭 삭제
+          }
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area-group__item'); //dropbox의 highlight 취소
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area-group__item drop-feedback'); //dropbox 체크 표시
+        }
+
+        else {    //drag하는 element가 텍스트 블럭인 경우
+          var text = $("#"+elementId).html();
+
+          if(textType.indexOf('trashCan') != -1) {  //trashCan dropbox에 drop한 경우
+            if(element.nextSibling === null && element.previousSibling === null)  //그룹 블럭에 하나 남은 텍스트 블럭인 경우
+              element.parentNode.remove(); //그룹 블럭 삭제
+            else
+              element.remove(); //텍스트 블럭만 삭제
+          }
+
+          else {
+            if(textType.indexOf('title') != -1)  //title dropbox에 drop한 경우
+              $("#memoFinal").append("<h1>" + text + "</h1>");
+            
+            else if(textType.indexOf('bold') != -1)  //bold dropbox에 drop한 경우
+              $("#memoFinal").append("<p><b>" + text + "</b></p>");
+            
+            else if(textType.indexOf('italic') != -1)  //italic dropbox에 drop한 경우
+              $("#memoFinal").append("<p><i>" + text + "</i></p>");
+            
+            else if(textType.indexOf('color') != -1) //color dropbox에 drop한 경우
+              $("#memoFinal").append("<p style='color:Tomato;'>" + text + "</p>");
+            
+            else  //plain drop box에 drop한 경우
+              $("#memoFinal").append("<p>" + text + "</p>");  
+
+            if(element.nextSibling === null && element.previousSibling === null)  //그룹 블럭에 하나 남은 텍스트 블럭인 경우
+              element.parentNode.remove(); //그룹 블럭 삭제
+            else
+              element.remove(); //텍스트 블럭만 삭제
+          }
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area__item'); //dropbox의 highlight 취소
+          document.getElementById(ev.target.id).setAttribute('class', 'drop-area__item drop-feedback'); //dropbox 체크 표시
+        }
+        $("#memoFinal").scrollTop($("#memoFinal")[0].scrollHeight); //스크롤바 자동 내리기
+      }
+
+      //textarea에서 enter 입력시 Enter 버튼 클릭
+      document.getElementById('memoInput').addEventListener('keydown',function(event){
+        if(event.keyCode ==13){
+          event.preventDefault();
+          document.getElementById('memoSend').click();
+        } 
+      });
+
+      //버튼 클릭 시 이벤트 발생
+      var submit = document.getElementById('memoSend');
+      submit.addEventListener('click', addTextBlock);
+
+      var textField = document.getElementById('memoInput');
+
+      //var groupColor = ['#6994ce', '#69CE86', '#CE6969', '#CEBF69']; //그룹 블럭의 배경색 저장  
+
+      //마크다운 태그 적용
+      function markDown(str) {
+        var res = str;
+        var end = "";
+        var mark = ["b`", "u`", "r`"];  //마크다운 문자 (b`/B`: 굵게, u`/U`: 밑줄, r`/R`: 빨간색)
+        var tag = ["<b>", "<u>", "<span style='color:Tomato;'>"];
+        var endtag = ["</b>", "</u>", "</span>"];
+        var count = new Array();
+
+        for(var i=0; i<mark.length; i++) {
+          var reg = new RegExp(mark[i],"gi"); //변수를 사용한 정규표현식
+          count[i] = (str.match(reg) || []).length;  //마크다운 문자 개수
+          res = res.replace(reg, tag[i]);
+        }
+        for(var i=0; i<mark.length; i++) {  //태그를 닫아줌
+          for(var j=0; j<count[i]; j++) {
+            end = end + endtag[i];
+          }
+        }
+        return res + end;
+      }
+
+      //공백으로 구분된 단어별 해시태그 및 마크다운 적용
+      function addTag(str) {
+        var res = "";
+        var hash = str.split('#');
+        if(str.indexOf('#') != -1) {  //해시태그용 태그 적용
+          for(var i=1; i<hash.length; i++) { //hash[1..]: 해시태그가 붙은 단어 -- 입력시 바로 저장(저장버튼 누르기 전에 자동으로 저장되는 문제)
+            res = res + "<a href='javascript:void(0);' onclick='goSearch(this);' data-value='" + hash[i] + "'>" + "#" + hash[i] + "</a>";
+          }
+        }
+        res = markDown(hash[0]) + res;
+        return res;
+      }
+
+      //입력 텍스트에 마크다운 및 해시태그 적용
+      function setTag(str) {
+        var idx = str.indexOf(" ");
+
+        if(idx == -1) {
+          return addTag(str);
+        }
+        else {
+          if(idx == 0) {
+            return " " + setTag(str.substring(1, str.length));
+          }
+          else if(idx == str.length-1) {
+            return addTag(str.substring(0, idx)) + " ";
+          }
+          else {
+            var s1 = str.substring(0, idx);
+            var s2 = str.substring(idx+1, str.length);
+            return addTag(s1) + " " + setTag(s2);
+          }
+        }
+      }
+
+      //text block을 추가하는 함수
+      function addTextBlock() {   
+        var text = textField.value;
+
+        if(text.trim() === '') {   //공백 입력시 새로운 그룹 생성
+          var newGroup = document.getElementById('group');
+          if(newGroup === null) { //그룹 블럭이 하나도 없는 상태에서 공백 입력하는 경우
+            $("#grid").append("<div id='group' class='groupBlock' style='display: none;' draggable='true' ondragstart='drag(event)' ondragend='dragend(event)'></div>");
+          }
+          else {  //그룹 블럭을 추가로 생성
+            var contentsInNewGroup = newGroup.textContent;
+            if(contentsInNewGroup !== '') {  //그룹 블럭 안에 아무 내용 없는 상태로 새로운 블럭이 생성되는 것을 방지
+              //newGroup.style.backgroundColor = groupColor[groupCount%4]; //그룹 블럭에 색 추가
+              var groupCount = $('#groupCount').attr('value');
+              groupCount = parseInt(groupCount);
+              newGroup.setAttribute('id', 'group' + groupCount);  //그룹 블럭에 id 부여
+              groupCount++;
+              $('#groupCount').attr('value', groupCount);
+              $("#grid").append("<div id='group' class='groupBlock' style='display: none;' draggable='true' ondragstart='drag(event)' ondragend='dragend(event)'></div>"); //그룹 블럭 추가(생성)
+            }
+          }    
+        }
+
+        else {  //텍스트 입력시 텍스트 블럭 생성
+          var check_group_exist = document.getElementById('group');
+          if(check_group_exist === null) {  //그룹 블럭이 하나도 없는 경우 새로운 그룹 블럭 먼저 생성 
+            $("#grid").append("<div id='group' class='groupBlock' draggable='true' ondragstart='drag(event)' ondragend='dragend(event)'></div>");
+          }
+
+          var line = text.split("\n");  //라인 단위로 분리
+          for(var i = 0; i<line.length; i++) {
+            if(line[i].trim() != '') {
+              var result = setTag(line[i]);  //마크다운 및 해시태그 적용
+              $("#group").append("<div class='grid__item' id='block' draggable='true' ondragstart='drag(event)' ondragend='dragend(event)'>" + result + "</div>");  //그룹 블럭에 텍스트 블럭 추가
+              if(document.getElementById('block').parentNode.style.display == 'none') {  //안보이던 빈 그룹 블럭이 보이게 바꿈
+                document.getElementById('block').parentNode.style.display = '';
+              }
+              var blockCount = $('#blockCount').attr('value');
+              blockCount = parseInt(blockCount);
+              document.getElementById('block').setAttribute('id', 'block' + blockCount);  //텍스트 블럭에 id 부여
+              blockCount++;
+              $('#blockCount').attr('value', blockCount);
+            }
+          }
+        }
+
+        $("#memoTemp").scrollTop($("#memoTemp")[0].scrollHeight); //스크롤바 자동 내리기      
+        textField.value = '';
+        textField.focus();
+      }
+
+      //hash 검색
+      function searchHash() { 
+        var hash = $('#search_hash').val();
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+
+        $.ajax({
+          url:"{%url 'note:searchhash' %}",
+          type:'GET',
+          data:{'hash': hash,
+              'csrfmiddlewaretoken': csrf
+          },
+          success: (function(data){
+            $('#hashlist').empty();
+            $('#hashlist').append(data);
+          }),
+        });
+      }
+
+      //#을 달았을때 새 창을 열어 google을 통해 검색
+      function goSearch(obj) {
+        window.open("https://www.google.com/search?sxsrf=ALeKk02qkq-plx98IN_HguIE8aMQt_Mt-g%3A1587651913229&source=hp&ei=SaWhXvTCC9CJoASZnYX4BQ&q="+$(obj).data('value'),"child","");
+      }
+
+      //이부분은 edit doc 버튼을 눌렀을 때 edit 부분을 입력하면 버튼들이 있는 div를 숨겼다가 폈다 하는 부분을 구현
+      var editButtons = document.getElementById('editButtons');
+      var memoFinal = document.getElementById('memoFinal');
+
+      function toggle(el) {
+        if(el.checked == false) {
+          editButtons.setAttribute('class', 'hide');
+          memoFinal.setAttribute('contenteditable', 'false');
+          $('#memoFinal').css('height','89vh');
+        }
+
+        else {
+          editButtons.setAttribute('class', '');
+          memoFinal.setAttribute('contenteditable', 'true');
+          $('#memoFinal').css('height','83vh');
+        }
+      }
+
+      //edit 영역 효과주는 스크립트 부분
+      function htmledit(execute, values) {
+        if(values == null) {
+          document.execCommand(execute);
+        } else {
+          document.execCommand(execute, "", values)
+        }
+      }
+
+
+      //html 저장
+      function saveAs(fileName){ 
+        var agent = navigator.userAgent; 
+        if(agent.indexOf('Trident')>0){ 
+          document.execCommand('SaveAs', true, fileName); 
+        }else{ 
+          var html = document.documentElement.innerHTML; 
+          if(agent.indexOf('Firefox')>0 && window.btoa){ 
+            window.location = 'data:application/octet-stream;base64,'+window.btoa(unescape(encodeURIComponent(html))); 
+          } else if (Blob && window.URL.createObjectURL){ 
+            var type = 'text/html' 
+            var a = document.createElement('a');                     
+            a.download = fileName; 
+            var data = new Blob([html], {type: type}); 
+            a.href = window.URL.createObjectURL(data); 
+            a.dataset.downloadurl = [type, fileName, a.href].join(':');         
+            a.click(); 
+          }else{ 
+            alert('지원하지 않는 브라우저 입니다.'); 
+         } 
+       } 
+     }
+
+
+      // sm, xs 사이즈에 네비게이션 바 튀어나오게 하는 부분
+      function openNav() {
+        document.getElementById("mySidenav").style.width = "250px";
+        //document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
+      }
+
+      // sm, xs 사이즈에 네비게이션 바 들어가게 하는 부분
+      function closeNav() {
+        document.getElementById("mySidenav").style.width = "0";
+        //document.body.style.backgroundColor = "white";
+      }
+
+      // sm, xs 사이즈의 네비게이션 바 안에 있는 드롭다운 메뉴
+      var dropdown = document.getElementById("sm-selectedTask");
+
+      dropdown.addEventListener("click", function() {
+        this.classList.toggle("active-smXsNav");
+        var dropdownContent = this.nextElementSibling;
+        if (dropdownContent.style.display === "block") {
+        dropdownContent.style.display = "none";
+        } else {
+        dropdownContent.style.display = "block";
+        }
+      });
+
+      
+      //서버를 이용하지 않고 이미지 구현
+      var upload = document.querySelector('#upload');
+      var memoFinal = document.querySelector('#memoFinal');
+
+      $(function () {
+        $('#btn-upload').click(function (e) {
+          e.preventDefault();
+          $('#upload').click();
+        });
+      });
+ 
+      upload.addEventListener('change', function (e) {
+        var get_file = e.target.files;
+ 
+        var image = document.createElement('img');
+ 
+        /* FileReader 객체 생성 */
+        var reader = new FileReader();
+ 
+        /* reader 시작시 함수 구현 */
+        reader.onload = (function (aImg) {
+ 
+            return function (e) {
+                /* base64 인코딩 된 스트링 데이터 */
+                aImg.src = e.target.result
+            }
+        })(image)
+ 
+        if(get_file){
+            /* 
+                get_file[0] 을 읽어서 read 행위가 종료되면 loadend 이벤트가 트리거 되고 
+                onload 에 설정했던 return 으로 넘어간다.
+                이와 함게 base64 인코딩 된 스트링 데이터가 result 속성에 담겨진다.
+            */
+            reader.readAsDataURL(get_file[0]);
+        }
+
+        //이미지의 속성을 미리 조정
+        image.setAttribute('style', 'max-width: 100%; height: auto;');
+        //이미지 드래그 사이즈 조절을 위한 아이디
+        image.setAttribute('id', 'insertImg');
+
+        memoFinal.appendChild(image);
+      })
+
+      // 이미지 드래그 사이즈 조절
+      $(document).ready(function() {
+          $('#insertImg').resizable();        
+          $('#insertImg').draggable();        
+      });
+
+
+     // using jQuery
+    function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = jQuery.trim(cookies[i]);
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) == (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $(document).ready(function() {
+      var csrftoken = getCookie('csrftoken');
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        }
+      });
+    });
+
+    //뷰어세이브
+    function viewersave() {
+        var jbHtml = $('.no-js').html()
+        var memoTempJq = jbHtml.substring(jbHtml.indexOf("memoTemp")-9, jbHtml.indexOf("<!-- memoTemp end -->")+21)
+        var memoFinalJq = jbHtml.substring(jbHtml.indexOf("memoFinal")-9 , jbHtml.indexOf("<!-- memoFinal end -->")+22)
+        var memo = memoTempJq+"@@"+memoFinalJq
+        var csrf = $('input[name="csrfmiddlewaretoken"]').first().val();
+        var hash = new Array(); //해시태그 붙은 문자열 배열
+        $('#memoTemp').find('a').each(function() {
+          hash.push( this.dataset.value)
+        });
+        $('#memoFinal').find('a').each(function() {
+          hash.push(this.dataset.value)
+        });
+
+        $.ajax({   //DB에 내용 저장
+          url:"{%url 'note:insertDB' %}",
+          type:'POST',
+          data:{'msg':memo,
+            'csrfmiddlewaretoken': csrf
+          },
+          success: (function(data){ }),
+        });
+        for(var i=0; i<hash.length; i++) {   //DB에 해시태그 저장
+          $.ajax({
+            url:"{%url 'note:savehash' %}",
+            type:'POST',
+            data:{'hash': hash[i],
+              'csrfmiddlewaretoken': csrf
+            },
+            success: (function(data){ }),
+          });
+        }
+        var id = "{{ request.session.user_id}}";
+        var filepath = $('#currentPath').text();
+        var filename = $('#currentName').text();
+        var url = "/viewer/" + id + "/" + filepath + "/" + filename +"/";
+        location.href = url;
+      }
+    </script>
+    <style>
+      #memoFinal {
+        overflow: auto !important;
+      }
+    </style>
+  </body>
+</html>

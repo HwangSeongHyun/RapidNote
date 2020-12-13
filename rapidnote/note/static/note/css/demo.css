@@ -1,0 +1,18 @@
+
+@font-face {
+	font-weight: normal;
+	font-style: normal;
+	font-family: 'NanumGothic';
+	src:url('../fonts/NanumGothic.ttf');
+}
+
+*, *:after, *:before { -webkit-box-sizing: border-box; box-sizing: border-box; }
+.clearfix:before, .clearfix:after { content: ''; display: table; }
+.clearfix:after { clear: both; }
+
+body {
+	font-weight: 400;
+	font-size: 1em;
+	font-family: 'NanumGothic';
+}
+

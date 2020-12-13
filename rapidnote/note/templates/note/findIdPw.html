@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RapidNote</title>
+
+  <!-- 합쳐지고 최소화된 최신 CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"> 
+  <!-- icon 링크 -->
+  <script src="https://kit.fontawesome.com/04a6f97450.js" crossorigin="anonymous"></script>
+  <!-- 템플릿 -->
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/normalize.css"%}' />
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/demo.css"%}' />
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/bottom-area.css"%}' />
+  <!-- pdf 변환을 위한 스크립트 -->
+  <script type = "text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+  <script type = "text/javascript" src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script type = "text/javascript" src = "http://code.jquery.com/jquery-latest.min.js"></script>
+  <style type="text/css">
+
+  </style>
+
+   {% if messages %}
+      <script>
+       {% for message in messages %}
+           alert("{{ message }}");
+       {% endfor %}
+      </script>
+{% endif %}
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-fixed-top navbar-default">
+      <div class="container">
+        
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <!-- 브랜드 마크를 눌러서 로그인 화면으로 넘어오게 href 속성을 조정하면 됨 -->
+          <a class="navbar-brand" href="{%url 'note:main'%}">
+            RapidNote
+          </a>
+          <p class="navbar-text">빠르고 편리한 필기</p>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="{%url 'note:download'%}">Download</a></li>
+
+          </ul>
+          
+          
+        </div><!-- navbar-collapse end -->
+      </div><!-- container end -->
+    </nav>  <!-- navbar end -->
+  </header>
+
+  <div class="findIdPw-image">
+  </div>
+
+  <div class="container">
+    <div class="row" id="rn-title">
+      <div class="col-xs-12">
+        <div class="text-center">
+          <h1>Find ID/PW</h1>
+          <p>아이디, 비밀번호를 까먹으셨나요? 걱정하지 마세요</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="col-sm-6" id="rn-findId">
+      <div class="text-center">
+        <h1>Find ID</h1>
+      </div>
+      <form accept-charset="UTF-8" role="form" method="POST" action="{%url 'note:findId'%}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="user_name">Name</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Enter Name" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="user_mail">E-mail</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="user_mail" name="user_mail" placeholder="Enter E-mail" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Find ID</button>
+          <button type="reset" class="btn btn-default">Reset</button>
+        </div>
+      </form>
+    </div>
+    <div class="col-sm-6" id="rn-findPw">
+      <div class="text-center">
+        <h1>Find PW</h1>
+      </div>
+      <form accept-charset="UTF-8" role="form" method="POST" action="{%url 'note:findPw'%}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="user_id">ID</label>
+          <div class="input-group text-center">
+            <input type="text" class="form-control" id="user_id" name="user_id" placeholder="Enter ID" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="user_name">Name</label>
+          <div class="input-group text-center">
+            <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Enter Name" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="user_mail">E-mail</label>
+          <div class="input-group text-center">
+            <input type="text" class="form-control" id="user_mail" name="user_mail" placeholder="Enter E-mail" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Find PW</button>
+          <button type="reset" class="btn btn-default">Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <footer>
+    <div class="container">
+      <div class="row" id="rn-footer">
+        <div class="col-sm-4 text-center">
+          <h4>About us</h4>
+          <p>2020-1 Kyonggi Univ. Capstone F Group<br>
+          Hyunbin Kim, Kiho Ryu, Jongho Jeong, Joonyeong Jeong, Seonghyun Hwang</p>
+        </div>
+
+        <div class="col-sm-4 text-center">
+          <h4>Do you like ? Share this !</h4>
+          <p>
+            <a href="https://facebook.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.instagram.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-instagram" aria-hidden="true"></i>
+            </a>
+          </p>  
+        </div>
+
+        <div class="col-sm-4 text-center">      
+          <div class="form-group">
+              <img src='{% static "note/css/pic/logo2.png"%}' alt="logo">
+          </div>
+          <br>
+          <p><small>© RapidNote | 2020-1 Kyonggi Univ. Capstone F Group</small></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script>
+
+  </script>
+  
+
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% load static %}
+	{% for filelist in filelist %}
+	    <li role="presentation">
+	      <a href="{% url 'note:changememo' task=filelist.filePath  memo=filelist.fileName %}" class="memo_list" value="{{filelist.fileName}}">
+	        <table id="memo">
+	     		<tr>
+	     			<td class="memoname1 hidden-md" rowspan="2" name="memoname" id="memoname"><h4><strong>{{filelist.fileName}}</strong></h4></td>
+	     			<td class="memoname2 hidden-lg hidden-sm hidden-xs" rowspan="2" name="memoname" id="memoname" data-toggle="tooltip" data-placement="right" title="{{filelist.fileName}}"><h4><span class="far fa-file"></span></h4></td>
+	     			<td class="hidden-sm hidden-xs" id="memoDate" style="display: none; padding-right: 1em;">{{filelist.lastModifiedDate| date:'Y.m.d'}}</td>
+	     		</tr>
+	     		<tr>
+	     			<td class="memoButtons hidden-sm hidden-xs" style="display: none; padding-right: 1em;">
+						<button class="renameMemo" data-toggle="modal" data-target="#renameMemoModal" data-memo="{{filelist.fileName}}" >
+					        <span class="fa fa-edit"></span>
+					    </button> <!-- 이름 수정 버튼 -->
+					    <button class="deleteMemo" value="{{filelist.fileName}}">
+					      <i class="fas fa-trash-alt" value="{{filelist.fileName}}"></i>
+					    </button> <!-- 삭제 버튼 -->
+	     			</td>
+	     		</tr>
+		     </table>
+	      </a>
+	      
+		  </li> <!-- li end -->
+	     {% endfor %}
+	     
+	      <li role="presentation"  >
+	    	<a href="#" onclick="return false;" class="memoMake">
+	          <div class="row" id="memoMake"> <!-- 새로운 메모 생성하는 +버튼 -->
+	            <button id="newMemo" class="center-block" data-toggle="modal" data-target="#memoModal">
+	              <span class="fa fa-plus"></span> <!-- span end -->
+	            </button><!-- row end -->
+	          </div><!-- memoMake end -->
+	    	</a>
+		</li> <!-- li end -->

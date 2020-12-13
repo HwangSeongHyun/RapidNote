@@ -1,0 +1,308 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RapidNote</title>
+
+  <!-- 합쳐지고 최소화된 최신 CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"> 
+  <!-- icon 링크 -->
+  <script src="https://kit.fontawesome.com/04a6f97450.js" crossorigin="anonymous"></script>
+  <!-- 템플릿 -->
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/normalize.css"%}' />
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/demo.css"%}' />
+  <link rel="stylesheet" type="text/css" href='{% static "note/css/bottom-area.css"%}' />
+  <!-- pdf 변환을 위한 스크립트 -->
+  <script type = "text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+  <script type = "text/javascript" src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script type = "text/javascript" src = "http://code.jquery.com/jquery-latest.min.js"></script>
+  <style type="text/css">
+
+  </style>
+  {% if messages %}
+    <script>
+     {% for message in messages %}
+         alert("{{ message }}");
+     {% endfor %}
+    </script>
+  {% endif %}
+
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-fixed-top navbar-default">
+      <div class="container">
+        
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <!-- 브랜드 마크를 눌러서 로그인 화면으로 넘어오게 href 속성을 조정하면 됨 -->
+          <a class="navbar-brand" href="{%url 'note:main'%}">
+            RapidNote
+          </a>
+          <p class="navbar-text">빠르고 편리한 필기</p>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <li id="note"><a href="{%url 'note:index'%}">Note</a></li>
+            <li id="sessionLogout"><a href="{%url 'note:logout'%}">Logout</a></li>
+            <li><a href="{%url 'note:download'%}">Download</a></li>
+          </ul>
+
+        </div><!-- navbar-collapse end -->
+      </div><!-- container end -->
+    </nav>  <!-- navbar end -->
+  </header>
+
+  <div class="laptop-image">
+      <form class="login-container" id="login-container" accept-charset="UTF-8" role="form" method="POST" action="{%url 'note:login'%}">
+        {% csrf_token %}
+        <h3>Login</h3>
+
+        <label for="email"><b>ID</b></label>
+        <input type="text" class="form-control" placeholder="Enter ID" name="user_id" id="user_id" required>
+
+        <label for="psw"><b>Password</b></label>
+        <input type="password" class="form-control" placeholder="Enter Password" name="password" id="password" required>
+
+        <br>
+        <button type="submit" class="btn btn-primary">Login</button>
+        <a href="{%url 'note:signup'%}" class="btn btn-default">Join</a>
+        <br><br>
+        <a href="{%url 'note:findIdPw'%}"> 아이디/비밀번호가 기억이 안 나시나요?</a>
+      </form>
+      
+      <div class="row laptop-text hidden-xs">
+          <h3>'Rapid' + 'Note'</h3>
+          <p>'빠른', '신속한' 이라는 뜻의 'rapid'와<br>
+            공책을 뜻하는 'note'가 만나<br>
+        키보드를 사용하여 보다 신속한 필기를 자랑하는 노트를 의미합니다 </p>
+      </div>
+  </div>
+
+
+  <div class="container">
+    <div class="row" id="rn-title">
+      <div class="col-xs-12">
+        <div class="text-center">
+          <h1>Fast Writing Ever</h1>
+          <p>키보드를 이용한 필기를 통해 빠른 필기감을 느껴보세요<br>
+          노트북뿐만 아니라 패드를 통해서 무선 키보드를 이용하여 빠른 필기를 자랑합니다<br>
+        어플을 이용하면 웹 사이트와는 다른 기능을 만나보실 수 있습니다</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row" id="rn-description">
+      <div class="col-sm-4">
+        <div class="text-center">
+          <i class="fa fa-chalkboard-teacher fa-3x" aria-hidden="true"></i>
+        </div>
+        <div class="text-center">
+          <h2>Lecture</h2>
+        </div>
+        <div class="text-center">
+          <p>교수님 말을 따라 적기 힘드셨죠?<br>바로바로 필기하고 드래그 드랍으로 수정까지 해줍니다</p>
+        </div>
+      </div>
+
+      <div class="col-sm-4">
+        <div class="text-center">
+          <i class="fa fa-user-graduate fa-3x" aria-hidden="true"></i>
+        </div>
+        <div class="text-center">
+          <h2>Semiar</h2>
+        </div>
+        <div class="text-center">
+          <p>여러 논문들을 보며 필기할 때의 불편함을 덜어드립니다<br>노트북 하나로 여러 PDF 파일을 보면서
+            필기하면서 놓치는 부분을 없애보세요
+          </p>
+        </div>
+      </div>
+
+      <div class="col-sm-4">
+        <div class="text-center">
+          <i class="fa fa-users fa-3x" aria-hidden="true"></i>
+        </div>
+        <div class="text-center">
+            <h2>Meetings</h2>
+        </div>
+        <div class="text-center">
+            <p>회의할 때 여러 명의 대화를 적는데 많이 힘드셨죠? <br>
+              RapidNote를 이용해 내용을 적고 회의록을 간단하게 완성해보세요
+            </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 캐러셀 -->
+  <div id="carousel-example-generic" class="carousel slide" data-ride="carousel" data-interval="5000">
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+      <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+      <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+      <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+    </ol>
+
+    <!-- Wrapper for slides 캐러셀 영역을 보려 bg-info-->
+    <div class="carousel-inner" role="listbox">
+      <div class="item active">
+        <img class="img-responsive center-block" src='{% static "note/css/pic/1.JPG"%}' alt="1.JPG" width="1600" height="1000">
+      </div>
+      <div class="item">
+        <img class="img-responsive center-block" src='{% static "note/css/pic/2.JPG"%}' alt="2.JPG" width="1600" height="1000">
+      </div>
+      <div class="item">
+        <img class="img-responsive center-block" src='{% static "note/css/pic/3.JPG"%}' alt="3.JPG" width="1600" height="1000">
+      </div>
+    </div>
+
+    <!-- Controls -->
+<!--     <a class="left carousel-control" href="#carousel-example-generic" role="button" data-slide="prev">
+      <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#carousel-example-generic" role="button" data-slide="next">
+      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a> -->
+  </div>
+
+
+  <div class="container-fluid">
+    <div class="row" id="rn-subtitle">
+      <div class="col-xs-12">
+        <div class="text-center">
+          <h2>You Want?</h2>
+            <p>아직 저희 RapidNote를 써보시지 않았나요?<br>
+            간단한 회원가입을 하여 저희 RapidNote가 제공하는 신속하고 빠른 필기감을 느껴보세요</p>
+            <a href="{%url 'note:signup'%}" title="" class="btn btn-primary btn-lg">Join</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="container">
+    <div class="row" id="rn-tech">                   
+      <div class="col-sm-7">
+        <img class="img-responsive" src='{% static "note/css/pic/code.jpg"%}' alt="code.jpg" width="600" height="450">
+      </div>
+
+      <div class="col-sm-5">
+        <ul class="features">
+          <li>
+            <h3>File System</h3>
+            <p>파일 시스템 관리를 통해 내가 쓴 필기들을 관리할 수 있습니다<br>
+              여러 개의 폴더와 그 안에 여러 가지 메모들들 생성할 수 있습니다
+            </p>
+          </li>
+          <li>
+            <h3>OCR</h3>
+            <p>필기가 어려운 스마트폰에서는 단순히 사진을 찍으면 문자를 인식하여 저장합니다<br>
+              높은 인식률의 OCR 기능을 이용해서 더 빠른 필기를 경험해보세요
+            </p>
+          </li>
+          <li>
+            <h3>Application</h3>
+            <p>태블릿과 휴대폰을 이용하여 RapidNote를 사용하실 수 있습니다<br>
+              어플로 다운받아 쉽게 메모해보세요
+            </p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row" id="rn-logo">
+      <div class="col-xs-4 text-center">
+        <i class="fab fa-js-square fa-3x" aria-hidden="true"></i>
+      </div>
+      <div class="col-xs-4 text-center">
+        <i class="fab fa-aws fa-3x" aria-hidden="true"></i>
+      </div>
+      <div class="col-xs-4 text-center">
+        <i class="fab fa-python fa-3x" aria-hidden="true"></i>
+      </div>
+    </div>    
+  </div>
+
+
+
+
+  <footer>
+    <div class="container">
+      <div class="row" id="rn-footer">
+        <div class="col-sm-4 text-center">
+          <h4>About us</h4>
+          <p>2020-1 Kyonggi Univ. Capstone F Group<br>
+          Hyunbin Kim, Kiho Ryu, Jongho Jeong, Joonyeong Jeong, Seonghyun Hwang</p>
+        </div>
+
+        <div class="col-sm-4 text-center">
+          <h4>Do you like ? Share this !</h4>
+          <p>
+            <a href="https://facebook.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.instagram.com/" class="social-round-icon white-round-icon fa-icon" title="">
+              <i class="fa fa-instagram" aria-hidden="true"></i>
+            </a>
+          </p>  
+        </div>
+
+        <div class="col-sm-4 text-center">      
+          <div class="form-group">
+              <img src='{% static "note/css/pic/logo2.png"%}' alt="logo">
+          </div>
+          <br>
+          <p><small>© RapidNote | 2020-1 Kyonggi Univ. Capstone F Group</small></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>    
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  <script>
+      //세션 값이 없을 때 로그인 창 숨키기
+      var session = "{{request.session.user_id}}";
+
+      var loginContainer = document.getElementById('login-container');
+      var note = document.getElementById('note');
+      var sessionLogout = document.getElementById('sessionLogout');
+      $(document).ready(function(){
+        if(session == '') {
+          loginContainer.classList.remove('hide');
+          note.classList.add('hide');
+          sessionLogout.classList.add('hide');
+        } else {
+          loginContainer.classList.add('hide');
+          note.classList.remove('hide');
+          sessionLogout.classList.remove('hide');
+        }
+      });
+  </script>
+  
+
+
+</body>
+</html>
